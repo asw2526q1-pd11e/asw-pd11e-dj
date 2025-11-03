@@ -1,154 +1,369 @@
-/* ==============================
-   🌸 Global Rose Theme Styles
-   ============================== */
+:root {
+  --rose-50: #fff5f7;
+  --rose-100: #fff0f3;
+  --rose-200: #fce7eb;
+  --rose-300: #f8d7da;
+  --rose-400: #f1b6c1;
+  --rose-500: #e29dac;
+  --rose-600: #d17892;
+  --rose-700: #a03d5d;
+  --rose-800: #7b2c46;
+  --rose-900: #4a1c2e;
+  --rose-950: #3b1423;
+  
+  --shadow-sm: 0 2px 6px rgba(122, 44, 70, 0.1);
+  --shadow-md: 0 4px 12px rgba(244, 63, 94, 0.15);
+  --shadow-lg: 0 8px 24px rgba(244, 63, 94, 0.25);
+  --shadow-xl: 0 12px 32px rgba(122, 44, 70, 0.3);
+  
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-html,
-body {
-  height: 100%;
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  min-height: 100%;
 }
 
 body {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #fff5f7; /* very soft rose background */
-  color: #4a1c2e; /* deep rose text */
-  font-family: "Inter", "Segoe UI", sans-serif;
-  line-height: 1.6;
+  background-color: #fdd7e4; /* very soft rose background */
+  color: var(--rose-900);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* Make main content expand to fill space */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 20% 50%, rgba(248, 215, 218, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(241, 182, 193, 0.2) 0%, transparent 50%);
+  animation: float 20s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(5deg); }
+  66% { transform: translate(-20px, 20px) rotate(-5deg); }
+}
+
 main {
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
-/* ==============================
-   🌹 Navbar
-   ============================== */
 .navbar {
-  background-color: #f8d7da !important; /* light rose */
-  box-shadow: 0 2px 6px rgba(122, 44, 70, 0.15);
+  background: rgba(248, 215, 218, 0.95) !important;
+  backdrop-filter: blur(12px) saturate(180%);
+  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid rgba(241, 182, 193, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: all var(--transition-base);
+}
+
+.navbar-scrolled {
+  box-shadow: var(--shadow-md);
+  background: rgba(248, 215, 218, 0.98) !important;
 }
 
 .navbar-brand,
 .nav-link {
-  color: #7b2c46 !important;
-  font-weight: 500;
-  transition: color 0.3s ease;
+  color: var(--rose-800) !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--rose-700), var(--rose-500));
+  transform: translateX(-50%);
+  transition: width var(--transition-base);
 }
 
 .nav-link:hover,
 .navbar-brand:hover {
-  color: #a03d5d !important;
+  color: var(--rose-700) !important;
+  transform: translateY(-2px);
 }
 
-/* ==============================
-   🌺 Footer
-   ============================== */
+.nav-link:hover::after {
+  width: 80%;
+}
+
 footer {
-  background-color: #f1b6c1; /* soft rose pink */
-  color: #4a1c2e;
-  font-size: 0.9rem;
+  background: linear-gradient(135deg, var(--rose-400) 0%, var(--rose-300) 100%);
+  color: var(--rose-900);
+  font-size: 0.95rem;
   text-align: center;
-  padding: 1rem 0;
+  padding: 2rem 0;
   margin-top: auto;
-  box-shadow: 0 -2px 6px rgba(122, 44, 70, 0.1);
+  box-shadow: 0 -4px 12px rgba(122, 44, 70, 0.15);
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-/* ==============================
-   🌷 Buttons & Links
-   ============================== */
+footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--rose-700), transparent);
+}
+
 a,
 .btn-link {
-  color: #a03d5d;
+  color: var(--rose-700);
   text-decoration: none;
-  transition: color 0.2s ease;
+  position: relative;
+  transition: all var(--transition-fast);
+  font-weight: 500;
 }
 
-a:hover,
+a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width var(--transition-base);
+}
+
+a:hover {
+  color: var(--rose-800);
+  transform: translateX(2px);
+}
+
+a:hover::after {
+  width: 100%;
+}
+
 .btn-link:hover {
-  color: #7b2c46;
-  text-decoration: underline;
+  text-decoration: none;
 }
 
 .btn-rose {
-  background-color: #f1b6c1;
-  color: #4a1c2e;
+  background: linear-gradient(135deg, var(--rose-400) 0%, var(--rose-500) 100%);
+  color: var(--rose-950);
   border: none;
-  transition: background-color 0.3s ease;
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+
+.btn-rose::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%);
+  transition: width var(--transition-slow), height var(--transition-slow);
 }
 
 .btn-rose:hover {
-  background-color: #e29dac;
-  color: #3b1423;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--rose-500) 0%, var(--rose-600) 100%);
 }
 
-/* ==============================
-   🌼 Cards & Containers
-   ============================== */
+.btn-rose:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn-rose:active {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
 .card {
-  background-color: #fff0f3;
-  border: 1px solid #f1b6c1;
-  border-radius: 0.75rem;
-  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.15);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(241, 182, 193, 0.3);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  overflow: hidden;
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--rose-400), var(--rose-600), var(--rose-400));
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(241, 182, 193, 0.5);
 }
 
-/* ==============================
-   🌹 Forms
-   ============================== */
+.card:hover::before {
+  opacity: 1;
+}
+
 input,
 textarea,
 select {
-  border: 1px solid #f1b6c1;
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--rose-300);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
   width: 100%;
   font-size: 1rem;
-  background-color: #fff;
-  color: #4a1c2e;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--rose-900);
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--rose-400);
+  opacity: 0.8;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: #a03d5d;
-  box-shadow: 0 0 0 3px rgba(160, 61, 93, 0.2);
+  border-color: var(--rose-700);
+  box-shadow: 0 0 0 4px rgba(160, 61, 93, 0.15);
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 1);
 }
 
-/* ==============================
-   🌸 Headings
-   ============================== */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  color: #7b2c46;
-  font-weight: 600;
+h1, h2, h3, h4, h5, h6 {
+  color: var(--rose-800);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-bottom: 1rem;
+  position: relative;
+  display: inline-block;
 }
 
-/* ==============================
-   🌺 Utilities
-   ============================== */
+h1 { font-size: 3rem; }
+h2 { font-size: 2.5rem; }
+h3 { font-size: 2rem; }
+h4 { font-size: 1.5rem; }
+
+h1::after,
+h2::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--rose-600), var(--rose-400));
+  border-radius: 2px;
+}
+
 .shadow-rose {
-  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.15);
+  box-shadow: var(--shadow-md);
 }
 
 .bg-rose-gradient {
-  background: linear-gradient(90deg, #f8d7da, #f1b6c1);
-  color: #4a1c2e;
+  background: linear-gradient(135deg, var(--rose-300) 0%, var(--rose-400) 50%, var(--rose-500) 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+  color: var(--rose-950);
 }
 
-/* Keep footer at the bottom on short pages */
-html {
-  min-height: 100%;
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.rose-glow {
+  box-shadow: 0 0 20px rgba(241, 182, 193, 0.6),
+              0 0 40px rgba(241, 182, 193, 0.4),
+              inset 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.5rem; }
+  
+  .btn-rose {
+    padding: 0.625rem 1.5rem;
+  }
+  
+  .card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

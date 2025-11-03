@@ -3,30 +3,87 @@
 {% block title %}Llista de Comunitats{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">Llista de Comunitats</h1>
+<div class="container py-4">
+  <div class="mb-4">
+    <h1 class="fw-bold mb-2">
+      <span class="gradient-text">Llista de Comunitats</span>
+    </h1>
+  </div>
 
-<ul class="list-group">
-  {% for c in communities %}
-  <li class="list-group-item d-flex align-items-center">
-    {% if c.avatar %}
-    <img
-      src="{{ c.avatar.url }}"
-      alt="{{ c.name }}"
-      width="50"
-      height="50"
-      class="me-3 rounded-circle"
-    />
-    {% endif %}
-    <div>
-      <strong>{{ c.id }} — {{ c.name }}</strong>
+  <div class="row g-3">
+    {% for c in communities %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card community-card h-100">
+        <div class="card-body p-3">
+          <div class="d-flex align-items-center">
+            {% if c.avatar %}
+            <div class="avatar-wrapper me-3">
+              <img
+                src="{{ c.avatar.url }}"
+                alt="{{ c.name }}"
+                width="50"
+                height="50"
+                class="rounded-circle shadow-rose"
+                style="object-fit: cover; border: 2px solid var(--rose-300);"
+              />
+            </div>
+            {% endif %}
+            
+            <div class="flex-grow-1">
+              <h6 class="card-title mb-1 fw-bold">{{ c.name }}</h6>
+              <span class="badge bg-rose-gradient px-2 py-1 small rounded-pill">
+                ID: {{ c.id }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </li>
-  {% empty %}
-  <li class="list-group-item">No hi ha comunitats.</li>
-  {% endfor %}
-</ul>
+    {% empty %}
+    <div class="col-12">
+      <div class="card text-center py-4">
+        <div class="card-body">
+          <h5 class="mb-2">No hi ha comunitats</h5>
+          <p class="text-muted small mb-0">Comença creant la teva primera comunitat</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 
-<a href="{% url 'communities:community_create' %}" class="btn btn-primary mt-3">
-  Crear una nova comunitat
-</a>
+  <div class="mt-4">
+    <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-lg">
+      Crear una nova comunitat
+    </a>
+  </div>
+</div>
+
+<style>
+.gradient-text {
+  background: linear-gradient(135deg, var(--rose-700), var(--rose-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.community-card {
+  transition: all var(--transition-base);
+  cursor: pointer;
+  border: 2px solid var(--rose-200);
+}
+
+.community-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--rose-400);
+}
+
+.avatar-wrapper img {
+  transition: transform var(--transition-base);
+}
+
+.community-card:hover .avatar-wrapper img {
+  transform: scale(1.1);
+}
+</style>
 {% endblock %}
