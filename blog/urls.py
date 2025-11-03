@@ -16,9 +16,9 @@ Including another URLconf
 """
 
 from django.urls import path
-from . import views
+from blog.views import post_views
 
 urlpatterns = [
-    path("", views.post_list, name="post_list"),  # listado de posts
-    path("create/", views.post_create, name="post_create"),  # crear post
+    path("", post_views.post_list, name="post_list"),  # listado de posts
+    path("create/", post_views.post_create, name="post_create"),  # crear post
 ]
