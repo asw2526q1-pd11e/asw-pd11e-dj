@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ca">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Llista de Comunitats</title>
+  </head>
+  <body>
+    <h1>Llista de Comunitats</h1>
+    <ul>
+      {% for c in communities %}
+      <li>{{ c.id }} — {{ c.name }}</li>
+      {% empty %}
+      <li>No hi ha comunitats.</li>
+      {% endfor %}
+    </ul>
+    <a href="{% url 'community_create' %}">Crear una nova comunitat</a>
+  </body>
+</html>
