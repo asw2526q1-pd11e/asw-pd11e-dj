@@ -8,7 +8,16 @@
     <h1>Llista de Comunitats</h1>
     <ul>
       {% for c in communities %}
-      <li>{{ c.id }} — {{ c.name }}</li>
+      <li>
+        {% if c.avatar %}
+        <img
+          src="{{ c.avatar.url }}"
+          alt="{{ c.name }}"
+          width="50"
+          height="50"
+        />
+        {% endif %} {{ c.id }} — {{ c.name }}
+      </li>
       {% empty %}
       <li>No hi ha comunitats.</li>
       {% endfor %}
