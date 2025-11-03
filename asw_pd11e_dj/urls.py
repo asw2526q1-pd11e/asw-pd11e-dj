@@ -15,17 +15,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin          # ← necesario para admin.site.urls
-from django.urls import path, include     # ← path y include
+from django.contrib import admin  # ← necesario para admin.site.urls
+from django.urls import path, include  # ← path y include
 from django.shortcuts import redirect
-from blog import views                     # importa tus vistas de la app blog
+
 
 # función para redirigir la raíz al listado de posts
 def redirect_to_blog(request):
-    return redirect('post_list')
+    return redirect("post_list")
+
 
 urlpatterns = [
-    path('', redirect_to_blog),            # raíz → redirige al listado de posts
-    path('admin/', admin.site.urls),       # admin
-    path('blog/', include('blog.urls')),   # rutas de la app blog
+    path("", redirect_to_blog),  # raíz → redirige al listado de posts
+    path("admin/", admin.site.urls),  # admin
+    path("blog/", include("blog.urls")),  # rutas de la app blog
 ]
