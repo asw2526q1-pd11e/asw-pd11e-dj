@@ -18,7 +18,6 @@ def community_list(request):
 
     communities = Community.objects.all()
     return render(
-        request,
-        "communities/community_list.html",
+        request, "communities/community_list.html",
         {"communities": communities}
     )
