@@ -15,25 +15,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin  # ← necesario para admin.site.urls
-from django.urls import path, include  # ← path y include
+from django.contrib import admin
+from django.urls import path, include
 from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
 
 
-# función para redirigir la raíz al listado de posts
+# función para redirigir la raíz al listado de posts en el namespace 'blog'
 def redirect_to_blog(request):
-    return redirect("post_list")
-
+    return redirect("blog:post_list")
+    
 
 urlpatterns = [
-    path("", redirect_to_blog),  # raíz → redirige al listado de posts
+    path("", redirect_to_blog),  # raíz → redirige a /blog/
     path("admin/", admin.site.urls),  # admin
-    path("blog/", include("blog.urls")),  # rutas de la app blog
-    path('communities/', include('communities.urls')),
+    path("blog/", include(("blog.urls", "blog"), namespace="blog")),
+    path("communities/", include(("communities.urls",
+                                  "communities"), namespace="communities")),
 ]
 
+# configuración de archivos estáticos y media en modo DEBUG
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)

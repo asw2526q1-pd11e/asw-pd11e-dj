@@ -1,27 +1,32 @@
-<!DOCTYPE html>
-<html lang="ca">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Llista de Comunitats</title>
-  </head>
-  <body>
-    <h1>Llista de Comunitats</h1>
-    <ul>
-      {% for c in communities %}
-      <li>
-        {% if c.avatar %}
-        <img
-          src="{{ c.avatar.url }}"
-          alt="{{ c.name }}"
-          width="50"
-          height="50"
-        />
-        {% endif %} {{ c.id }} — {{ c.name }}
-      </li>
-      {% empty %}
-      <li>No hi ha comunitats.</li>
-      {% endfor %}
-    </ul>
-    <a href="{% url 'community_create' %}">Crear una nova comunitat</a>
-  </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Llista de Comunitats{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Llista de Comunitats</h1>
+
+<ul class="list-group">
+  {% for c in communities %}
+  <li class="list-group-item d-flex align-items-center">
+    {% if c.avatar %}
+    <img
+      src="{{ c.avatar.url }}"
+      alt="{{ c.name }}"
+      width="50"
+      height="50"
+      class="me-3 rounded-circle"
+    />
+    {% endif %}
+    <div>
+      <strong>{{ c.id }} — {{ c.name }}</strong>
+    </div>
+  </li>
+  {% empty %}
+  <li class="list-group-item">No hi ha comunitats.</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'communities:community_create' %}" class="btn btn-primary mt-3">
+  Crear una nova comunitat
+</a>
+{% endblock %}

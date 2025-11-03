@@ -1,16 +1,16 @@
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Crear Post</title>
-</head>
-<body>
-<h1>Crear Post</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
-</form>
-<a href="{% url 'post_list' %}">Volver a la lista</a>
-</body>
-</html>
+{% block title %}Crear Post{% endblock %}
+
+{% block content %}
+  <h1>Crear Post</h1>
+  <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Guardar</button>
+  </form>
+
+  <p>
+    <a href="{% url 'blog:post_list' %}">Volver a la lista</a>
+  </p>
+{% endblock %}
