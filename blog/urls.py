@@ -14,18 +14,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-
-from django.contrib import admin          # ← necesario para admin.site.urls
-from django.urls import path, include     # ← path y include
-from django.shortcuts import redirect
-from blog import views                     # importa tus vistas de la app blog
-
-# función para redirigir la raíz al listado de posts
-def redirect_to_blog(request):
-    return redirect('post_list')
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('', redirect_to_blog),            # raíz → redirige al listado de posts
-    path('admin/', admin.site.urls),       # admin
-    path('blog/', include('blog.urls')),   # rutas de la app blog
+    path('', views.post_list, name='post_list'),      # listado de posts
+    path('create/', views.post_create, name='post_create'),  # crear post
 ]

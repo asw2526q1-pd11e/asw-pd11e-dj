@@ -1,0 +1,9 @@
+<h1>Lista de Posts</h1>
+<ul>
+    {% for post in posts %}
+    <li>{{ post.title }} - {{ post.author }}</li>
+    {% empty %}
+    <li>No hay posts.</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'post_create' %}">Crear un nuevo Post</a>
