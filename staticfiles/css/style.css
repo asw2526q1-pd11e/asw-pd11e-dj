@@ -1,0 +1,48 @@
+html,
+body {
+  height: 100%;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff5f7; /* very soft rose background */
+  color: #4a1c2e; /* deep rose text */
+}
+main {
+  flex: 1;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #f8d7da !important; /* light rose */
+}
+.navbar-brand,
+.nav-link {
+  color: #7b2c46 !important;
+  font-weight: 500;
+}
+.nav-link:hover {
+  color: #a03d5d !important;
+}
+
+/* Footer */
+footer {
+  background-color: #f1b6c1; /* soft rose pink */
+  color: #4a1c2e;
+}
+
+/* Buttons and links */
+a,
+.btn-link {
+  color: #a03d5d;
+}
+a:hover,
+.btn-link:hover {
+  color: #7b2c46;
+}
+
+/* Optional: cards or containers */
+.card {
+  background-color: #fff0f3;
+  border-color: #f1b6c1;
+}

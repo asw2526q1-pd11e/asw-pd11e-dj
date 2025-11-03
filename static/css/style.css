@@ -1,0 +1,154 @@
+/* ==============================
+   🌸 Global Rose Theme Styles
+   ============================== */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff5f7; /* very soft rose background */
+  color: #4a1c2e; /* deep rose text */
+  font-family: "Inter", "Segoe UI", sans-serif;
+  line-height: 1.6;
+}
+
+/* Make main content expand to fill space */
+main {
+  flex: 1;
+}
+
+/* ==============================
+   🌹 Navbar
+   ============================== */
+.navbar {
+  background-color: #f8d7da !important; /* light rose */
+  box-shadow: 0 2px 6px rgba(122, 44, 70, 0.15);
+}
+
+.navbar-brand,
+.nav-link {
+  color: #7b2c46 !important;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover,
+.navbar-brand:hover {
+  color: #a03d5d !important;
+}
+
+/* ==============================
+   🌺 Footer
+   ============================== */
+footer {
+  background-color: #f1b6c1; /* soft rose pink */
+  color: #4a1c2e;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem 0;
+  margin-top: auto;
+  box-shadow: 0 -2px 6px rgba(122, 44, 70, 0.1);
+}
+
+/* ==============================
+   🌷 Buttons & Links
+   ============================== */
+a,
+.btn-link {
+  color: #a03d5d;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover,
+.btn-link:hover {
+  color: #7b2c46;
+  text-decoration: underline;
+}
+
+.btn-rose {
+  background-color: #f1b6c1;
+  color: #4a1c2e;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-rose:hover {
+  background-color: #e29dac;
+  color: #3b1423;
+}
+
+/* ==============================
+   🌼 Cards & Containers
+   ============================== */
+.card {
+  background-color: #fff0f3;
+  border: 1px solid #f1b6c1;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
+}
+
+/* ==============================
+   🌹 Forms
+   ============================== */
+input,
+textarea,
+select {
+  border: 1px solid #f1b6c1;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #4a1c2e;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #a03d5d;
+  box-shadow: 0 0 0 3px rgba(160, 61, 93, 0.2);
+}
+
+/* ==============================
+   🌸 Headings
+   ============================== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #7b2c46;
+  font-weight: 600;
+}
+
+/* ==============================
+   🌺 Utilities
+   ============================== */
+.shadow-rose {
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.15);
+}
+
+.bg-rose-gradient {
+  background: linear-gradient(90deg, #f8d7da, #f1b6c1);
+  color: #4a1c2e;
+}
+
+/* Keep footer at the bottom on short pages */
+html {
+  min-height: 100%;
+}
