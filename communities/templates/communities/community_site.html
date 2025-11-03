@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}{{ community.name }}{% endblock %}
+
+{% block content %}
+<div class="community-detail">
+  <div class="banner-section position-relative">
+    {% if community.banner %}
+    <img
+      src="{{ community.banner.url }}"
+      alt="{{ community.name }} banner"
+      class="banner-image w-100"
+    />
+    {% else %}
+    <div class="banner-image w-100" style="background-color: white;"></div>
+    {% endif %}
+    <div class="banner-gradient"></div>
+  </div>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <div class="community-info-section py-4">
+          <div class="d-flex align-items-start gap-4">
+            {% if community.avatar %}
+            <div class="avatar-wrapper">
+              <img
+                src="{{ community.avatar.url }}"
+                alt="{{ community.name }}"
+                class="community-avatar rounded-circle shadow-lg"
+              />
+            </div>
+            {% endif %}
+            
+            <div class="flex-grow-1">
+              <h1 class="community-name fw-bold mb-2">{{ community.name }}</h1>
+              {% if community.description %}
+              <p class="community-description text-muted">{{ community.description }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 text-center">
+          <a href="{% url 'communities:community_list' %}" class="btn btn-rose shadow-lg">
+            Tornar a la llista de comunitats
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.community-detail {
+  margin-top: -1rem;
+}
+
+.banner-section {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--rose-300), var(--rose-400));
+}
+
+.banner-image {
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.banner-section:hover .banner-image {
+  transform: scale(1.02);
+}
+
+.banner-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to top, rgba(255, 245, 247, 1) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.community-info-section {
+  margin-top: -50px;
+  position: relative;
+  z-index: 10;
+}
+
+.avatar-wrapper {
+  flex-shrink: 0;
+}
+
+.community-avatar {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border: 5px solid white;
+  background: white;
+  transition: transform var(--transition-base);
+}
+
+.community-avatar:hover {
+  transform: scale(1.05);
+}
+
+.community-name {
+  font-size: 2rem;
+  color: var(--rose-900);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.community-description {
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 800px;
+}
+
+@media (max-width: 768px) {
+  .banner-section {
+    height: 150px;
+  }
+  
+  .community-info-section {
+    margin-top: -40px;
+  }
+  
+  .community-avatar {
+    width: 80px;
+    height: 80px;
+    border-width: 4px;
+  }
+  
+  .community-name {
+    font-size: 1.5rem;
+  }
+  
+  .d-flex.align-items-start {
+    flex-direction: column;
+    align-items: center !important;
+    text-align: center;
+  }
+  
+  .avatar-wrapper {
+    margin-bottom: 1rem;
+  }
+}
+</style>
+{% endblock %}
