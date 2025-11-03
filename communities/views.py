@@ -8,7 +8,7 @@ def community_create(request):
         form = CommunityForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect("community_list")
+            return redirect("communities:community_list")
     else:
         form = CommunityForm()
     return render(request, "communities/community_form.html", {"form": form})
