@@ -18,6 +18,8 @@ Including another URLconf
 from django.contrib import admin  # ← necesario para admin.site.urls
 from django.urls import path, include  # ← path y include
 from django.shortcuts import redirect
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 # función para redirigir la raíz al listado de posts
@@ -31,3 +33,7 @@ urlpatterns = [
     path("blog/", include("blog.urls")),  # rutas de la app blog
     path('communities/', include('communities.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
