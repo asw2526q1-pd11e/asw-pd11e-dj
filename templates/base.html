@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mi Proyecto{% endblock %}</title>
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
+</head>
+<body class="bg-pink-50 text-pink-900 font-sans min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-pink-200 shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-pink-900">Mi Proyecto 💖</h1>
+            <nav class="space-x-4">
+                <a href="/blog/" class="text-pink-900 hover:text-pink-700 font-medium">Posts</a>
+                <a href="/communities/" class="text-pink-900 hover:text-pink-700 font-medium">Comunidades</a>
+            
+            </nav>
+        </div>
+    </header>
+
+    <!-- Flash messages / notifications -->
+    <div class="container mx-auto px-4 mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 p-4 rounded shadow
+                    {% if message.tags == 'error' %}bg-red-200 text-red-900{% endif %}
+                    {% if message.tags == 'success' %}bg-green-200 text-green-900{% endif %}
+                    {% if message.tags == 'warning' %}bg-yellow-200 text-yellow-900{% endif %}
+                    {% if message.tags == 'info' %}bg-blue-200 text-blue-900{% endif %}
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main content -->
+    <main class="flex-1 container mx-auto px-4 py-6">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-pink-200 py-6 mt-auto text-center text-pink-900 border-t border-pink-300">
+        <p class="text-sm">&copy; {{ now|date:"Y" }} Mi Proyecto. Todos los derechos reservados.</p>
+        <p class="text-xs text-pink-800 mt-1">
+            Hecho con 💖 usando Django y TailwindCSS
+        </p>
+    </footer>
+
+</body>
+</html>

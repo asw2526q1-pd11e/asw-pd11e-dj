@@ -29,4 +29,5 @@ urlpatterns = [
     path("", redirect_to_blog),  # raíz → redirige al listado de posts
     path("admin/", admin.site.urls),  # admin
     path("blog/", include("blog.urls")),  # rutas de la app blog
+    path('communities/', include('communities.urls')),
 ]

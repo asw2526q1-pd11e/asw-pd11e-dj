@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ca">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Crear Comunitat</title>
+  </head>
+  <body>
+    <h1>Crear Comunitat</h1>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Desar</button>
+    </form>
+    <a href="{% url 'community_list' %}">Tornar a la llista</a>
+  </body>
+</html>

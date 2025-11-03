@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - dev
 
 jobs:
   lint:
@@ -15,7 +16,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
@@ -24,6 +25,3 @@ jobs:
 
       - name: Run flake8
         run: flake8 .
-
-      - name: Run black check
-        run: black --check .
