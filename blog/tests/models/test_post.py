@@ -52,16 +52,20 @@ def test_name_max_length():
 def test_content_cannot_be_null():
     with pytest.raises(Exception):
         Post.objects.create(
-            title="Title", content=None, author="Author",
-            published_date=timezone.now()
+            title="Title",
+            content=None,
+            author="Author",
+            published_date=timezone.now(),
         )
 
 
 @pytest.mark.django_db
 def test_content_cannot_be_blank():
     post = Post(
-        title="Title", content="", author="Author",
-        published_date=timezone.now()
+        title="Title",
+        content="",
+        author="Author",
+        published_date=timezone.now(),
     )
     with pytest.raises(Exception):
         post.full_clean()
@@ -78,16 +82,20 @@ def test_content_max_length():
 def test_author_cannot_be_null():
     with pytest.raises(Exception):
         Post.objects.create(
-            title="Title", content="Content", author=None,
-            published_date=timezone.now()
+            title="Title",
+            content="Content",
+            author=None,
+            published_date=timezone.now(),
         )
 
 
 @pytest.mark.django_db
 def test_author_cannot_be_blank():
     post = Post(
-        title="Title", content="Content", author="",
-        published_date=timezone.now()
+        title="Title",
+        content="Content",
+        author="",
+        published_date=timezone.now(),
     )
     with pytest.raises(Exception):
         post.full_clean()
