@@ -1,6 +1,7 @@
 from blog.models.post import Post
 from blog.forms import PostForm
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
 
 
 def post_list(request):
@@ -22,3 +23,25 @@ def post_create(request):
 def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
     return render(request, "blog/post_detail.html", {"post": post})
+
+
+@require_POST
+def upvote_post(request, pk):
+    try:
+        post = Post.objects.get(pk=pk)
+        post.votes += 1
+        post.save()
+        return redirect("blog:post_list")
+    except Post.DoesNotExist:
+        return redirect("blog:post_list")
+
+
+@require_POST
+def downvote_post(request, pk):
+    try:
+        post = Post.objects.get(pk=pk)
+        post.votes -= 1
+        post.save()
+        return redirect("blog:post_list")
+    except Post.DoesNotExist:
+        return redirect("blog:post_list")
