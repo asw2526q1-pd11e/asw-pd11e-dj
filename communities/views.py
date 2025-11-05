@@ -15,17 +15,37 @@ def community_create(request):
 
 
 def community_list(request):
-    from .models import Community
-
     communities = Community.objects.all()
+
+    community_data = []
+    for c in communities:
+        community_data.append({
+            "obj": c,
+            "fake_subs": (c.id * 13) % 500 + 20,
+            "fake_comments": (c.id * 7) % 120 + 3,
+            "fake_posts": (c.id * 5) % 80 + 1,
+        })
+
     return render(
-        request, "communities/community_list.html",
-        {"communities": communities}
+        request,
+        "communities/community_list.html",
+        {"community_data": community_data}
     )
 
 
 def community_site(request, pk):
     community = get_object_or_404(Community, id=pk)
+
+    # Calcula les estadístiques fake
+    fake_subs = (community.id * 13) % 500 + 20
+    fake_posts = (community.id * 5) % 80 + 1
+    fake_comments = (community.id * 7) % 120 + 3
+
     return render(request,
                   'communities/community_site.html',
-                  {'community': community})
+                  {
+                      'community': community,
+                      'fake_subs': fake_subs,
+                      'fake_posts': fake_posts,
+                      'fake_comments': fake_comments,
+                  })

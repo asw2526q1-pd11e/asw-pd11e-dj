@@ -35,8 +35,23 @@
             <div class="flex-grow-1">
               <h1 class="community-name fw-bold mb-2">{{ community.name }}</h1>
               {% if community.description %}
-              <p class="community-description text-muted">{{ community.description }}</p>
+              <p class="community-description text-muted mb-3">{{ community.description }}</p>
               {% endif %}
+              
+              <div class="community-stats d-flex gap-4 mt-3">
+                <div class="stat-item">
+                  <span class="stat-number fw-bold">{{ fake_subs }}</span>
+                  <span class="stat-label text-muted small">Subscriptors</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number fw-bold">{{ fake_posts }}</span>
+                  <span class="stat-label text-muted small">Posts</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-number fw-bold">{{ fake_comments }}</span>
+                  <span class="stat-label text-muted small">Comentaris</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -119,6 +134,27 @@
   max-width: 800px;
 }
 
+.community-stats {
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  color: var(--rose-700);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 @media (max-width: 768px) {
   .banner-section {
     height: 150px;
@@ -146,6 +182,14 @@
   
   .avatar-wrapper {
     margin-bottom: 1rem;
+  }
+  
+  .community-stats {
+    justify-content: center;
+  }
+  
+  .stat-number {
+    font-size: 1.25rem;
   }
 }
 </style>

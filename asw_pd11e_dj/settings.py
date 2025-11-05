@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-8qu^s(p(l2xfx*u9b1qe%uucei#%9@q!lv$d==t5l!lk(+u2qs"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True 
+DEBUG = True
 ALLOWED_HOSTS = ["asw-pd11e-dj.onrender.com", "localhost", "127.0.0.1"]
 
 # Application definition
@@ -33,7 +33,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  #Serveix fitxers estàtics en producció
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Serveix fitxers estàtics en producció
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -71,7 +71,9 @@ DATABASES = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -84,8 +86,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]        # fitxers estàtics del projecte
-STATIC_ROOT = BASE_DIR / "staticfiles"          # destinació de collectstatic
+STATICFILES_DIRS = [BASE_DIR / "static"]  # fitxers estàtics del projecte
+STATIC_ROOT = BASE_DIR / "staticfiles"  # destinació de collectstatic
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
