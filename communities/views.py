@@ -20,12 +20,12 @@ def community_list(request):
 
     community_data = []
     for c in communities:
-        real_posts = c.posts.count()  # ✅ gràcies al related_name
+        real_posts = c.posts.count()  # type: ignore
         community_data.append({
             "obj": c,
             "fake_subs": (c.id * 13) % 500 + 20,
             "fake_comments": (c.id * 7) % 120 + 3,
-            "fake_posts": real_posts,  # ✅ ara és real
+            "fake_posts": real_posts,
         })
 
     return render(
@@ -33,6 +33,7 @@ def community_list(request):
         "communities/community_list.html",
         {"community_data": community_data}
     )
+
 
 def community_site(request, pk):
     community = get_object_or_404(Community, id=pk)

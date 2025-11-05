@@ -44,7 +44,7 @@
                   <span class="stat-label text-muted small">Subscriptors</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-number fw-bold">{{ fake_posts }}</span>
+                  <span class="stat-number fw-bold">{{ posts.count }}</span>
                   <span class="stat-label text-muted small">Posts</span>
                 </div>
                 <div class="stat-item">
@@ -60,6 +60,22 @@
           <a href="{% url 'communities:community_list' %}" class="btn btn-rose shadow-lg">
             Tornar a la llista de comunitats
           </a>
+        </div>
+
+        <div class="mt-5">
+          <h2 class="fw-bold mb-4 text-center">Posts de {{ community.name }}</h2>
+
+          {% if posts %}
+          <div class="posts-list">
+            {% for post in posts %}
+              {% include "blog/post_card.html" with post=post %}
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-muted text-center mt-4">
+            Aquesta comunitat encara no té cap post.
+          </p>
+          {% endif %}
         </div>
       </div>
     </div>
