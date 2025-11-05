@@ -31,8 +31,10 @@ urlpatterns = [
     path("", redirect_to_blog),  # raíz → redirige a /blog/
     path("admin/", admin.site.urls),  # admin
     path("blog/", include(("blog.urls", "blog"), namespace="blog")),
-    path("communities/", include(("communities.urls",
-                                  "communities"), namespace="communities")),
+    path(
+        "communities/",
+        include(("communities.urls", "communities"), namespace="communities"),
+    ),
 ]
 
 # configuración de archivos estáticos y media en modo DEBUG

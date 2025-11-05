@@ -22,10 +22,9 @@ class Migration(migrations.Migration):
                         unique=True
                     ),
                 ),
-                ("name",
-                 models.CharField(blank=True,
-                                  max_length=200,
-                                  null=True)),
+                ("name", models.CharField(blank=True,
+                                          max_length=200,
+                                          null=True)),
                 (
                     "avatar",
                     models.ImageField(
