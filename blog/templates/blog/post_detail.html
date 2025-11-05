@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }} | DailyPost{% endblock %}
+
+{% block extra_head %}
+<style>
+    .post-detail-card {
+      border: 3px solid #d63384;
+      border-radius: 20px;
+      background-color: #fff;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      align-items: flex-start;
+    }
+
+    .post-detail-image {
+      flex: 0 0 280px;
+      text-align: center;
+    }
+
+    .post-detail-image img {
+      width: 100%;
+      height: auto;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .post-detail-content {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .post-detail-title {
+      font-size: 2.2em;
+      color: #d63384;
+      margin-bottom: 10px;
+    }
+
+    .post-detail-meta {
+      color: #777;
+      font-size: 1.1em;
+      margin-bottom: 20px;
+    }
+
+    .post-detail-votes {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .vote-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.8em;
+    }
+
+    .vote-btn.up {
+      color: #28a745;
+    }
+
+    .vote-btn.down {
+      color: #dc3545;
+    }
+
+    .communities-badges span {
+      background: #fce4ec;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.9em;
+    }
+
+    .post-content {
+      font-size: 1.15em;
+      line-height: 1.7;
+      text-align: justify;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="post-detail-card">
+
+    <!-- Imagen a la izquierda -->
+    {% if post.image %}
+    <div class="post-detail-image">
+        <img src="{{ post.image.url }}" alt="{{ post.title }}">
+    </div>
+    {% endif %}
+
+    <!-- Contenido principal -->
+    <div class="post-detail-content">
+
+        <!-- Título -->
+        <h1 class="post-detail-title">
+            {{ post.title }}
+            {% if post.url %}
+            <a href="{{ post.url }}" target="_blank" title="Ver enlace relacionado" style="text-decoration:none; font-size:0.8em; margin-left:8px;">🔗</a>
+            {% endif %}
+        </h1>
+
+        <!-- Autor y fecha -->
+        <p class="post-detail-meta">
+            Publicado por <strong>{{ post.author }}</strong> el
+            <em>{{ post.published_date|date:"d 'de' F 'de' Y, H:i" }}</em>
+        </p>
+
+        <!-- Votación + Comunidades -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+
+            <!-- Votos -->
+            <div class="post-detail-votes">
+                <form action="{% url 'blog:upvote_post' post.pk %}" method="post" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="vote-btn up">▲</button>
+                </form>
+
+                <span style="font-size: 1.5em; font-weight: bold;">{{ post.votes }}</span>
+
+                <form action="{% url 'blog:downvote_post' post.pk %}" method="post" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="vote-btn down">▼</button>
+                </form>
+            </div>
+
+            <!-- Comunidades -->
+            {% if post.communities.exists %}
+            <div class="communities-badges d-flex flex-wrap gap-2">
+                {% for community in post.communities.all %}
+                <span>{{ community.name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Contenido -->
+        <div class="post-content mb-4">
+            {{ post.content|linebreaks }}
+        </div>
+
+        <!-- Botón de regreso -->
+        <a href="{% url 'blog:post_list' %}" class="btn btn-rose text-white px-4 py-2" style="border-radius:10px;">
+            ← Volver al listado
+        </a>
+
+    </div>
+</div>
+
+<!-- Espacio futuro para comentarios -->
+<div class="mt-5 text-center text-muted">
+    <h4>💬 Próximamente: comentarios</h4>
+    <p>En esta sección podrás dejar tu opinión y participar en la conversación.</p>
+</div>
+{% endblock %}

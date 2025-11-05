@@ -31,9 +31,9 @@ def upvote_post(request, pk):
         post = Post.objects.get(pk=pk)
         post.votes += 1
         post.save()
-        return redirect("blog:post_list")
     except Post.DoesNotExist:
-        return redirect("blog:post_list")
+        pass
+    return redirect(request.META.get("HTTP_REFERER", "blog:post_list"))
 
 
 @require_POST
@@ -42,6 +42,6 @@ def downvote_post(request, pk):
         post = Post.objects.get(pk=pk)
         post.votes -= 1
         post.save()
-        return redirect("blog:post_list")
     except Post.DoesNotExist:
-        return redirect("blog:post_list")
+        pass
+    return redirect(request.META.get("HTTP_REFERER", "blog:post_list"))
