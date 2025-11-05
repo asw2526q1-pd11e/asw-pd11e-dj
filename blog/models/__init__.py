@@ -1,3 +1,2 @@
 from .post import Post
-
-__all__ = ["Post"]
+from .posts_communities import PostsCommunities

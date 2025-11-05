@@ -16,16 +16,10 @@ class Migration(migrations.Migration):
                 (
                     "id",
                     models.CharField(
-                        max_length=100,
-                        primary_key=True,
-                        serialize=False,
-                        unique=True
+                        max_length=100, primary_key=True, serialize=False, unique=True
                     ),
                 ),
-                ("name",
-                 models.CharField(blank=True,
-                                  max_length=200,
-                                  null=True)),
+                ("name", models.CharField(blank=True, max_length=200, null=True)),
                 (
                     "avatar",
                     models.ImageField(

@@ -2,15 +2,38 @@
 
 {% block title %}Crear Post{% endblock %}
 
-{% block content %}
-  <h1>Crear Post</h1>
-  <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit">Guardar</button>
-  </form>
+{% block extra_head %}
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
 
-  <p>
+{% block content %}
+<h1>Crear Post</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar</button>
+</form>
+
+<p>
     <a href="{% url 'blog:post_list' %}">Volver a la lista</a>
-  </p>
+</p>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- jQuery (requerido por Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Inicializar Select2 en el campo de comunidades
+        $('#id_communities').select2({
+            placeholder: 'Selecciona una o más comunidades',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
 {% endblock %}
