@@ -25,7 +25,7 @@ from django.conf.urls.static import static
 # función para redirigir la raíz al listado de posts en el namespace 'blog'
 def redirect_to_blog(request):
     return redirect("blog:post_list")
-    
+
 
 urlpatterns = [
     path("", redirect_to_blog),  # raíz → redirige a /blog/
