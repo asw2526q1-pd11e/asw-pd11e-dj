@@ -23,6 +23,7 @@ def community_list(request):
             "obj": c,
             "fake_subs": (c.id * 13) % 500 + 20,
             "fake_comments": (c.id * 7) % 120 + 3,
+            "fake_posts": (c.id * 5) % 80 + 1,
         })
 
     return render(
