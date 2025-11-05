@@ -1,12 +1,23 @@
 <div class="post-card"
-     style="border: 2px solid #d63384; border-radius: 10px; padding: 15px; margin-bottom: 20px; max-width: 700px; display: flex; gap: 15px; align-items: flex-start;">
+     style="
+         background-color: #fff;
+         border: 2px solid #d63384;
+         border-radius: 10px;
+         padding: 15px;
+         margin-bottom: 20px;
+         max-width: 700px;
+         display: flex;
+         gap: 15px;
+         align-items: flex-start;
+         box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+     ">
 
     <!-- Imagen -->
     {% if post.image %}
     <div style="flex-shrink: 0;">
         <a href="{% url 'blog:post_detail' post.pk %}" style="text-decoration: none;">
             <img src="{{ post.image.url }}" alt="{{ post.title }}"
-                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px;">
+                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 10px; cursor: pointer;">
         </a>
     </div>
     {% endif %}
@@ -41,7 +52,7 @@
     <div style="flex: 1; min-width: 0;">
         <h2 style="margin: 0; font-size: 1.5em;">
             <a href="{% url 'blog:post_detail' post.pk %}"
-               style="text-decoration:none; color:inherit;">
+               style="text-decoration:none; color:inherit; cursor:pointer;">
                 {{ post.title }}
             </a>
             {% if post.url %}

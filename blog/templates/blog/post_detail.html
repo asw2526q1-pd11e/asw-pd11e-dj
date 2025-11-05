@@ -88,17 +88,14 @@
 {% block content %}
 <div class="post-detail-card">
 
-    <!-- Imagen a la izquierda -->
     {% if post.image %}
     <div class="post-detail-image">
         <img src="{{ post.image.url }}" alt="{{ post.title }}">
     </div>
     {% endif %}
 
-    <!-- Contenido principal -->
     <div class="post-detail-content">
 
-        <!-- Título -->
         <h1 class="post-detail-title">
             {{ post.title }}
             {% if post.url %}
@@ -106,16 +103,13 @@
             {% endif %}
         </h1>
 
-        <!-- Autor y fecha -->
         <p class="post-detail-meta">
             Publicado por <strong>{{ post.author }}</strong> el
             <em>{{ post.published_date|date:"d 'de' F 'de' Y, H:i" }}</em>
         </p>
 
-        <!-- Votación + Comunidades -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
 
-            <!-- Votos -->
             <div class="post-detail-votes">
                 <form action="{% url 'blog:upvote_post' post.pk %}" method="post" class="m-0">
                     {% csrf_token %}
@@ -130,7 +124,6 @@
                 </form>
             </div>
 
-            <!-- Comunidades -->
             {% if post.communities.exists %}
             <div class="communities-badges d-flex flex-wrap gap-2">
                 {% for community in post.communities.all %}
@@ -140,12 +133,10 @@
             {% endif %}
         </div>
 
-        <!-- Contenido -->
         <div class="post-content mb-4">
             {{ post.content|linebreaks }}
         </div>
 
-        <!-- Botón de regreso -->
         <a href="{% url 'blog:post_list' %}" class="btn btn-rose text-white px-4 py-2" style="border-radius:10px;">
             ← Volver al listado
         </a>
@@ -153,7 +144,6 @@
     </div>
 </div>
 
-<!-- Espacio futuro para comentarios -->
 <div class="mt-5 text-center text-muted">
     <h4>💬 Próximamente: comentarios</h4>
     <p>En esta sección podrás dejar tu opinión y participar en la conversación.</p>
