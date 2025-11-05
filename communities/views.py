@@ -15,12 +15,20 @@ def community_create(request):
 
 
 def community_list(request):
-    from .models import Community
-
     communities = Community.objects.all()
+
+    community_data = []
+    for c in communities:
+        community_data.append({
+            "obj": c,
+            "fake_subs": (c.id * 13) % 500 + 20,
+            "fake_comments": (c.id * 7) % 120 + 3,
+        })
+
     return render(
-        request, "communities/community_list.html",
-        {"communities": communities}
+        request,
+        "communities/community_list.html",
+        {"community_data": community_data}
     )
 
 
