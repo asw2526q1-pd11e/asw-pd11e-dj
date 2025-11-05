@@ -21,7 +21,9 @@ class Post(models.Model):
     url = models.URLField(blank=True, null=True)
 
     communities = models.ManyToManyField(
-        "communities.Community", through="blog.PostsCommunities", related_name="posts"
+        "communities.Community",
+        through="blog.PostsCommunities",
+        related_name="posts"
     )
 
     def __str__(self):

@@ -18,8 +18,10 @@ def community_banner_path(instance, filename):
 class Community(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=200, blank=True, null=True)
-    avatar = models.ImageField(upload_to=community_avatar_path, blank=True, null=True)
-    banner = models.ImageField(upload_to=community_banner_path, blank=True, null=True)
+    avatar = models.ImageField(upload_to=community_avatar_path,
+                               blank=True, null=True)
+    banner = models.ImageField(upload_to=community_banner_path,
+                               blank=True, null=True)
 
     def __str__(self):
         return self.name or f"Comunitat #{self.id}"

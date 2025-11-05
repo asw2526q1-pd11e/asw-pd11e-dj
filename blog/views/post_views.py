@@ -1,4 +1,3 @@
-from django.shortcuts import render, redirect
 from blog.models.post import Post
 from blog.forms import PostForm
 from django.shortcuts import render, redirect, get_object_or_404

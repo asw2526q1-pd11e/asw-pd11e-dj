@@ -126,7 +126,10 @@ def test_url_field_allows_blank_and_null():
 @pytest.mark.django_db
 def test_invalid_url_raises_validation_error():
     post = Post(
-        title="Title", content="Content", author="Author", url="not-a-valid-url"
+        title="Title",
+        content="Content",
+        author="Author",
+        url="not-a-valid-url"
     )
     with pytest.raises(ValidationError):
         post.full_clean()
