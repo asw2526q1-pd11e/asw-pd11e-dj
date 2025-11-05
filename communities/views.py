@@ -35,12 +35,12 @@ def community_list(request):
 
 def community_site(request, pk):
     community = get_object_or_404(Community, id=pk)
-    
+
     # Calcula les estadístiques fake
     fake_subs = (community.id * 13) % 500 + 20
     fake_posts = (community.id * 5) % 80 + 1
     fake_comments = (community.id * 7) % 120 + 3
-    
+
     return render(request,
                   'communities/community_site.html',
                   {
