@@ -4,6 +4,16 @@
 
 {% block content %}
 <div class="community-detail">
+  <!-- Back button -->
+  <div class="back-button-container">
+    <a href="{% url 'communities:community_list' %}" class="back-button">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 19l-7-7 7-7"/>
+      </svg>
+      <span>Comunitats</span>
+    </a>
+  </div>
+
   <div class="banner-section position-relative">
     {% if community.banner %}
     <img
@@ -12,58 +22,52 @@
       class="banner-image w-100"
     />
     {% else %}
-    <div class="banner-image w-100" style="background-color: white;"></div>
+    <div class="banner-image w-100 default-banner"></div>
     {% endif %}
-    <div class="banner-gradient"></div>
+    <div class="banner-overlay"></div>
   </div>
 
   <div class="container">
     <div class="row">
       <div class="col-12">
-        <div class="community-info-section py-4">
-          <div class="d-flex align-items-start gap-4">
+        <div class="community-header">
+          <div class="community-header-content">
             {% if community.avatar %}
-            <div class="avatar-wrapper">
+            <div class="avatar-container">
               <img
                 src="{{ community.avatar.url }}"
                 alt="{{ community.name }}"
-                class="community-avatar rounded-circle shadow-lg"
+                class="community-avatar"
               />
             </div>
             {% endif %}
             
-            <div class="flex-grow-1">
-              <h1 class="community-name fw-bold mb-2">{{ community.name }}</h1>
+            <div class="community-info">
+              <h1 class="community-name">{{ community.name }}</h1>
               {% if community.description %}
-              <p class="community-description text-muted mb-3">{{ community.description }}</p>
+              <p class="community-description">{{ community.description }}</p>
               {% endif %}
               
-              <div class="community-stats d-flex gap-4 mt-3">
-                <div class="stat-item">
-                  <span class="stat-number fw-bold">{{ fake_subs }}</span>
-                  <span class="stat-label text-muted small">Subscriptors</span>
+              <div class="community-stats">
+                <div class="stat-card">
+                  <div class="stat-number">{{ fake_subs }}</div>
+                  <div class="stat-label">Subscriptors</div>
                 </div>
-                <div class="stat-item">
-                  <span class="stat-number fw-bold">{{ posts.count }}</span>
-                  <span class="stat-label text-muted small">Posts</span>
+                <div class="stat-card">
+                  <div class="stat-number">{{ posts.count }}</div>
+                  <div class="stat-label">Posts</div>
                 </div>
-                <div class="stat-item">
-                  <span class="stat-number fw-bold">{{ fake_comments }}</span>
-                  <span class="stat-label text-muted small">Comentaris</span>
+                <div class="stat-card">
+                  <div class="stat-number">{{ fake_comments }}</div>
+                  <div class="stat-label">Comentaris</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="mt-4 text-center">
-          <a href="{% url 'communities:community_list' %}" class="btn btn-rose shadow-lg">
-            Tornar a la llista de comunitats
-          </a>
-        </div>
-
-        <div class="mt-5">
-          <h2 class="fw-bold mb-4 text-center">Posts de {{ community.name }}</h2>
+        <div class="posts-section">
+          <h2 class="section-title">Posts de {{ community.name }}</h2>
 
           {% if posts %}
           <div class="posts-list">
@@ -72,9 +76,13 @@
             {% endfor %}
           </div>
           {% else %}
-          <p class="text-muted text-center mt-4">
-            Aquesta comunitat encara no té cap post.
-          </p>
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <p>Aquesta comunitat encara no té cap post.</p>
+          </div>
           {% endif %}
         </div>
       </div>
@@ -85,127 +93,288 @@
 <style>
 .community-detail {
   margin-top: -1rem;
+  position: relative;
+}
+
+.back-button-container {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  z-index: 100;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+  color: var(--rose-700);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.back-button:hover {
+  background: white;
+  color: var(--rose-800);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateX(-2px);
+}
+
+.back-button svg {
+  transition: transform 0.2s ease;
+}
+
+.back-button:hover svg {
+  transform: translateX(-3px);
 }
 
 .banner-section {
   width: 100%;
-  height: 200px;
+  height: 280px;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--rose-300), var(--rose-400));
+  position: relative;
 }
 
 .banner-image {
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-slow);
+  transition: transform 0.6s ease;
+}
+
+.default-banner {
+  background: linear-gradient(135deg, var(--rose-400) 0%, var(--rose-500) 100%);
 }
 
 .banner-section:hover .banner-image {
-  transform: scale(1.02);
+  transform: scale(1.05);
 }
 
-.banner-gradient {
+.banner-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 100px;
-  background: linear-gradient(to top, rgba(255, 245, 247, 1) 0%, transparent 100%);
+  height: 150px;
+  background: linear-gradient(to top, 
+    rgba(255, 245, 247, 1) 0%, 
+    rgba(255, 245, 247, 0.8) 40%,
+    transparent 100%);
   pointer-events: none;
 }
 
-.community-info-section {
-  margin-top: -50px;
+.community-header {
+  margin-top: -80px;
   position: relative;
   z-index: 10;
+  padding: 0 1rem;
 }
 
-.avatar-wrapper {
+.community-header-content {
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
+  max-width: 1200px;
+}
+
+.avatar-container {
   flex-shrink: 0;
 }
 
 .community-avatar {
-  width: 120px;
-  height: 120px;
+  width: 140px;
+  height: 140px;
   object-fit: cover;
+  border-radius: 20px;
   border: 5px solid white;
   background: white;
-  transition: transform var(--transition-base);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
 }
 
 .community-avatar:hover {
-  transform: scale(1.05);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+}
+
+.community-info {
+  flex-grow: 1;
+  padding-bottom: 0.5rem;
 }
 
 .community-name {
-  font-size: 2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
   color: var(--rose-900);
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 0.75rem 0;
 }
 
 .community-description {
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.6;
-  max-width: 800px;
+  color: var(--rose-700);
+  margin: 0 0 1.5rem 0;
+  max-width: 700px;
 }
 
 .community-stats {
+  display: flex;
+  gap: 1.5rem;
   flex-wrap: wrap;
 }
 
-.stat-item {
+.stat-card {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stat-number {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--rose-700);
+  line-height: 1;
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  color: var(--rose-600);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+.posts-section {
+  margin-top: 4rem;
+  padding: 0 1rem;
+}
+
+.section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--rose-900);
+  margin-bottom: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--rose-400);
+}
+
+.empty-state svg {
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  color: var(--rose-500);
+  margin: 0;
 }
 
 @media (max-width: 768px) {
+  .back-button-container {
+    top: 1rem;
+    left: 1rem;
+  }
+
+  .back-button {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.85rem;
+  }
+
+  .back-button span {
+    display: none;
+  }
+
   .banner-section {
-    height: 150px;
+    height: 200px;
   }
   
-  .community-info-section {
-    margin-top: -40px;
+  .community-header {
+    margin-top: -60px;
+  }
+
+  .community-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
   }
   
   .community-avatar {
-    width: 80px;
-    height: 80px;
-    border-width: 4px;
+    width: 100px;
+    height: 100px;
+    border-radius: 16px;
   }
   
   .community-name {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
-  
-  .d-flex.align-items-start {
-    flex-direction: column;
-    align-items: center !important;
-    text-align: center;
-  }
-  
-  .avatar-wrapper {
-    margin-bottom: 1rem;
+
+  .community-description {
+    font-size: 0.95rem;
   }
   
   .community-stats {
     justify-content: center;
   }
+
+  .stat-card {
+    padding: 0.625rem 1rem;
+  }
   
   .stat-number {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .posts-section {
+    margin-top: 3rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .community-stats {
+    width: 100%;
+  }
+
+  .stat-card {
+    flex: 1;
+    min-width: calc(33.333% - 1rem);
   }
 }
 </style>

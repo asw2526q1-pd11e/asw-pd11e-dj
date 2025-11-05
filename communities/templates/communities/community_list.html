@@ -22,6 +22,7 @@
               <th scope="col" class="py-3">Subscriptors</th>
               <th scope="col" class="py-3">Posts</th>
               <th scope="col" class="py-3">Comentaris</th>
+              <th scope="col" class="py-3 text-end pe-4"></th>
             </tr>
           </thead>
           <tbody>
@@ -66,10 +67,16 @@
               <td class="py-3 text-muted">
                 {{ item.fake_comments }}
               </td>
+              <td class="py-3 text-end pe-4">
+                <button class="subscribe-btn" onclick="this.classList.toggle('subscribed')">
+                  <span class="subscribe-text">Subscriu-te</span>
+                  <span class="subscribed-text">Subscrit</span>
+                </button>
+              </td>
             </tr>
             {% empty %}
             <tr>
-              <td colspan="6" class="text-center py-5">
+              <td colspan="7" class="text-center py-5">
                 <h5 class="mb-2 text-muted">No hi ha comunitats</h5>
                 <p class="text-muted small mb-0">Comença creant la teva primera comunitat</p>
               </td>
@@ -87,4 +94,63 @@
     </a>
   </div>
 </div>
+
+<style>
+.subscribe-btn {
+  position: relative;
+  padding: 0.5rem 1.25rem;
+  border: 2px solid var(--rose-500);
+  background: white;
+  color: var(--rose-600);
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  min-width: 120px;
+}
+
+.subscribe-btn:hover {
+  background: var(--rose-50);
+  border-color: var(--rose-600);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.2);
+}
+
+.subscribe-btn:active {
+  transform: translateY(0);
+}
+
+.subscribe-btn .subscribed-text {
+  display: none;
+}
+
+.subscribe-btn.subscribed {
+  background: var(--rose-500);
+  color: white;
+  border-color: var(--rose-500);
+}
+
+.subscribe-btn.subscribed:hover {
+  background: var(--rose-600);
+  border-color: var(--rose-600);
+}
+
+.subscribe-btn.subscribed .subscribe-text {
+  display: none;
+}
+
+.subscribe-btn.subscribed .subscribed-text {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .subscribe-btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+    min-width: 100px;
+  }
+}
+</style>
 {% endblock %}
