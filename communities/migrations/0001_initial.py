@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
             name="Community",
             fields=[
                 ("id", models.BigAutoField(primary_key=True, serialize=False)),
-                ("name", models.CharField(blank=True, max_length=200, null=True)),
+                ("name",
+                 models.CharField(blank=True, max_length=200, null=True)),
                 (
                     "avatar",
                     models.ImageField(
