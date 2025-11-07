@@ -39,41 +39,16 @@
           </tr>
         </thead>
         <tbody>
-          {% for item in community_data %}
-          <tr>
-            <td class="px-4 py-3">
-              <a href="{% url 'communities:community_site' item.obj.pk %}">
-                {% if item.obj.avatar %}
-                <img src="{{ item.obj.avatar.url }}" alt="{{ item.obj.name }}" class="rounded-circle shadow-sm border border-rose-300" width="40" height="40" style="object-fit: cover;" />
-                {% else %}
-                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-rose-300" style="width: 40px; height: 40px;">
-                  <span class="text-muted small">N/A</span>
-                </div>
-                {% endif %}
-              </a>
-            </td>
-            <td>
-              <a href="{% url 'communities:community_site' item.obj.pk %}" class="text-decoration-none text-dark fw-semibold">
-                {{ item.obj.name }}
-              </a>
-            </td>
-            <td><span class="badge bg-rose-gradient small rounded-pill">{{ item.obj.id }}</span></td>
-            <td class="text-muted">{{ item.fake_subs }}</td>
-            <td class="text-muted">{{ item.fake_posts }}</td>
-            <td class="text-muted">{{ item.fake_comments }}</td>
-            <td class="text-end pe-4">
-              <button class="subscribe-btn" onclick="this.classList.toggle('subscribed')">
-                <span class="subscribe-text">Subscriu-te</span>
-                <span class="subscribed-text">Subscrit</span>
-              </button>
-            </td>
-          </tr>
+          {% for community in community_data %}
+            {% include "communities/_community_card.html" with community=community %}
           {% empty %}
           <tr>
             <td colspan="7" class="text-center py-5">
               <h5 class="mb-2 text-muted">No hi ha comunitats</h5>
               <p class="text-muted small mb-3">Comença creant la teva primera comunitat</p>
-              <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-sm">Crear comunitat</a>
+              <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-sm">
+                Crear comunitat
+              </a>
             </td>
           </tr>
           {% endfor %}
