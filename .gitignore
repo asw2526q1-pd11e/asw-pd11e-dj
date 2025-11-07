@@ -5,10 +5,20 @@
 .DS_Store
 Thumbs.db
 
-# Ignore compiled files / build
-*.class
+# Ignore compiled Python files
+__pycache__/
 *.pyc
+
+# Ignore build / distribution
 /build/
 
-
+# Ignore virtual environments
+.venv/
 venv/
+
+# Ignore database and static/media files (Django)
+/staticfiles/
+/media/
+
+/# Ignore environment config
+.env
