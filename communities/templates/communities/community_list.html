@@ -4,14 +4,23 @@
 
 {% block content %}
 <div class="container py-4">
-  <header class="mb-4">
-    <h1 class="fw-bold mb-2 gradient-text">Llista de Comunitats</h1>
+  <header class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+      <h1 class="fw-bold mb-2 gradient-text">Llista de Comunitats</h1>
 
-    <!-- Botons de filtre -->
-    <div class="filter-toggle-group mt-3">
-      <button class="filter-btn active" data-mode="tot">Tot</button>
-      <button class="filter-btn" data-mode="subscrit">Subscrit</button>
-      <button class="filter-btn" data-mode="local">Local</button>
+      <!-- Botons de filtre -->
+      <div class="filter-toggle-group mt-2">
+        <button class="filter-btn active" data-mode="tot">Tot</button>
+        <button class="filter-btn" data-mode="subscrit">Subscrit</button>
+        <button class="filter-btn" data-mode="local">Local</button>
+      </div>
+    </div>
+
+    <!-- Botó crear comunitat -->
+    <div>
+      <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-lg px-4 py-2 fw-semibold">
+        <i class="bi bi-plus-circle me-2"></i> Crear comunitat
+      </a>
     </div>
   </header>
 
@@ -43,13 +52,11 @@
                 {% endif %}
               </a>
             </td>
-
             <td>
               <a href="{% url 'communities:community_site' item.obj.pk %}" class="text-decoration-none text-dark fw-semibold">
                 {{ item.obj.name }}
               </a>
             </td>
-
             <td><span class="badge bg-rose-gradient small rounded-pill">{{ item.obj.id }}</span></td>
             <td class="text-muted">{{ item.fake_subs }}</td>
             <td class="text-muted">{{ item.fake_posts }}</td>
@@ -65,17 +72,14 @@
           <tr>
             <td colspan="7" class="text-center py-5">
               <h5 class="mb-2 text-muted">No hi ha comunitats</h5>
-              <p class="text-muted small mb-0">Comença creant la teva primera comunitat</p>
+              <p class="text-muted small mb-3">Comença creant la teva primera comunitat</p>
+              <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-sm">Crear comunitat</a>
             </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-  </div>
-
-  <div class="mt-4 text-center">
-    <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-lg">Crear una nova comunitat</a>
   </div>
 </div>
 
