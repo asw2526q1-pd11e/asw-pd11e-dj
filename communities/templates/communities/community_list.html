@@ -4,100 +4,113 @@
 
 {% block content %}
 <div class="container py-4">
-  <div class="mb-4">
-    <h1 class="fw-bold mb-2">
-      <span class="gradient-text">Llista de Comunitats</span>
-    </h1>
-  </div>
+  <header class="mb-4">
+    <h1 class="fw-bold mb-2 gradient-text">Llista de Comunitats</h1>
+
+    <!-- Botons de filtre -->
+    <div class="filter-toggle-group mt-3">
+      <button class="filter-btn active" data-mode="tot">Tot</button>
+      <button class="filter-btn" data-mode="subscrit">Subscrit</button>
+      <button class="filter-btn" data-mode="local">Local</button>
+    </div>
+  </header>
 
   <div class="card shadow-sm">
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light">
-            <tr>
-              <th scope="col" class="px-4 py-3">Avatar</th>
-              <th scope="col" class="py-3">Nom</th>
-              <th scope="col" class="py-3">ID</th>
-              <th scope="col" class="py-3">Subscriptors</th>
-              <th scope="col" class="py-3">Posts</th>
-              <th scope="col" class="py-3">Comentaris</th>
-              <th scope="col" class="py-3 text-end pe-4"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for item in community_data %}
-            <tr>
-              <td class="px-4 py-3">
-                <a href="{% url 'communities:community_site' item.obj.pk %}">
-                  {% if item.obj.avatar %}
-                  <img
-                    src="{{ item.obj.avatar.url }}"
-                    alt="{{ item.obj.name }}"
-                    width="40"
-                    height="40"
-                    class="rounded-circle shadow-sm"
-                    style="object-fit: cover; border: 2px solid var(--rose-300);"
-                  />
-                  {% else %}
-                  <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center" 
-                       style="width: 40px; height: 40px; border: 2px solid var(--rose-300);">
-                    <span class="text-muted small">N/A</span>
-                  </div>
-                  {% endif %}
-                </a>
-              </td>
-              <td class="py-3">
-                <a href="{% url 'communities:community_site' item.obj.pk %}" 
-                   class="text-decoration-none text-dark fw-semibold">
-                  {{ item.obj.name }}
-                </a>
-              </td>
-              <td class="py-3">
-                <span class="badge bg-rose-gradient px-2 py-1 small rounded-pill">
-                  {{ item.obj.id }}
-                </span>
-              </td>
-              <td class="py-3 text-muted">
-                {{ item.fake_subs }}
-              </td>
-              <td class="py-3 text-muted">
-                {{ item.fake_posts }}
-              </td>
-              <td class="py-3 text-muted">
-                {{ item.fake_comments }}
-              </td>
-              <td class="py-3 text-end pe-4">
-                <button class="subscribe-btn" onclick="this.classList.toggle('subscribed')">
-                  <span class="subscribe-text">Subscriu-te</span>
-                  <span class="subscribed-text">Subscrit</span>
-                </button>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="7" class="text-center py-5">
-                <h5 class="mb-2 text-muted">No hi ha comunitats</h5>
-                <p class="text-muted small mb-0">Comença creant la teva primera comunitat</p>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="px-4 py-3">Avatar</th>
+            <th>Nom</th>
+            <th>ID</th>
+            <th>Subscriptors</th>
+            <th>Posts</th>
+            <th>Comentaris</th>
+            <th class="text-end pe-4"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in community_data %}
+          <tr>
+            <td class="px-4 py-3">
+              <a href="{% url 'communities:community_site' item.obj.pk %}">
+                {% if item.obj.avatar %}
+                <img src="{{ item.obj.avatar.url }}" alt="{{ item.obj.name }}" class="rounded-circle shadow-sm border border-rose-300" width="40" height="40" style="object-fit: cover;" />
+                {% else %}
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-rose-300" style="width: 40px; height: 40px;">
+                  <span class="text-muted small">N/A</span>
+                </div>
+                {% endif %}
+              </a>
+            </td>
+
+            <td>
+              <a href="{% url 'communities:community_site' item.obj.pk %}" class="text-decoration-none text-dark fw-semibold">
+                {{ item.obj.name }}
+              </a>
+            </td>
+
+            <td><span class="badge bg-rose-gradient small rounded-pill">{{ item.obj.id }}</span></td>
+            <td class="text-muted">{{ item.fake_subs }}</td>
+            <td class="text-muted">{{ item.fake_posts }}</td>
+            <td class="text-muted">{{ item.fake_comments }}</td>
+            <td class="text-end pe-4">
+              <button class="subscribe-btn" onclick="this.classList.toggle('subscribed')">
+                <span class="subscribe-text">Subscriu-te</span>
+                <span class="subscribed-text">Subscrit</span>
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-5">
+              <h5 class="mb-2 text-muted">No hi ha comunitats</h5>
+              <p class="text-muted small mb-0">Comença creant la teva primera comunitat</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <div class="mt-4">
-    <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-lg">
-      Crear una nova comunitat
-    </a>
+  <div class="mt-4 text-center">
+    <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-lg">Crear una nova comunitat</a>
   </div>
 </div>
 
 <style>
+/* FILTRES */
+.filter-toggle-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  border: 2px solid var(--rose-400);
+  background: white;
+  color: var(--rose-600);
+  border-radius: 50px;
+  padding: 0.45rem 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.filter-btn:hover {
+  background: var(--rose-50);
+}
+
+.filter-btn.active {
+  background: var(--rose-500);
+  color: white;
+  border-color: var(--rose-500);
+  box-shadow: var(--shadow-sm);
+}
+
+/* SUBSCRIPCIÓ */
 .subscribe-btn {
-  position: relative;
   padding: 0.5rem 1.25rem;
   border: 2px solid var(--rose-500);
   background: white;
@@ -106,51 +119,35 @@
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  overflow: hidden;
   min-width: 120px;
+  transition: all var(--transition-base);
 }
 
 .subscribe-btn:hover {
   background: var(--rose-50);
-  border-color: var(--rose-600);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.2);
-}
-
-.subscribe-btn:active {
-  transform: translateY(0);
-}
-
-.subscribe-btn .subscribed-text {
-  display: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .subscribe-btn.subscribed {
   background: var(--rose-500);
   color: white;
-  border-color: var(--rose-500);
 }
 
 .subscribe-btn.subscribed:hover {
   background: var(--rose-600);
-  border-color: var(--rose-600);
 }
 
-.subscribe-btn.subscribed .subscribe-text {
-  display: none;
-}
-
-.subscribe-btn.subscribed .subscribed-text {
-  display: inline;
-}
-
-@media (max-width: 768px) {
-  .subscribe-btn {
-    padding: 0.4rem 1rem;
-    font-size: 0.8rem;
-    min-width: 100px;
-  }
-}
+.subscribe-btn.subscribed .subscribe-text { display: none; }
+.subscribe-btn .subscribed-text { display: none; }
+.subscribe-btn.subscribed .subscribed-text { display: inline; }
 </style>
+
+<script>
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+    });
+  });
+</script>
 {% endblock %}
