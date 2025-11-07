@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="container py-4">
-  <header class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <!-- Header -->
+  <header class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
     <div>
       <h1 class="fw-bold mb-2 gradient-text">Llista de Comunitats</h1>
-
       <!-- Botons de filtre -->
-      <div class="filter-toggle-group mt-2">
+      <div class="filter-toggle-group mt-3">
         <button class="filter-btn active" data-mode="tot">Tot</button>
         <button class="filter-btn" data-mode="subscrit">Subscrit</button>
         <button class="filter-btn" data-mode="local">Local</button>
@@ -18,12 +18,13 @@
 
     <!-- Botó crear comunitat -->
     <div>
-      <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-lg px-4 py-2 fw-semibold">
-        <i class="bi bi-plus-circle me-2"></i> Crear comunitat
+      <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-lg d-flex align-items-center gap-2">
+        <i class="bi bi-plus-circle"></i> Crear comunitat
       </a>
     </div>
   </header>
 
+  <!-- Taula -->
   <div class="card shadow-sm">
     <div class="table-responsive">
       <table class="table table-hover mb-0">
@@ -45,10 +46,7 @@
           <tr>
             <td colspan="7" class="text-center py-5">
               <h5 class="mb-2 text-muted">No hi ha comunitats</h5>
-              <p class="text-muted small mb-3">Comença creant la teva primera comunitat</p>
-              <a href="{% url 'communities:community_create' %}" class="btn btn-rose shadow-sm">
-                Crear comunitat
-              </a>
+              <p class="text-muted small mb-0">Comença creant la teva primera comunitat</p>
             </td>
           </tr>
           {% endfor %}
@@ -58,6 +56,7 @@
   </div>
 </div>
 
+<!-- Estils propis d’aquesta pàgina -->
 <style>
 /* FILTRES */
 .filter-toggle-group {
@@ -88,40 +87,16 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* SUBSCRIPCIÓ */
-.subscribe-btn {
-  padding: 0.5rem 1.25rem;
-  border: 2px solid var(--rose-500);
-  background: white;
-  color: var(--rose-600);
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  min-width: 120px;
-  transition: all var(--transition-base);
+/* Hover suau a la taula */
+.table-hover tbody tr:hover {
+  background-color: var(--rose-50);
+  transition: background-color 0.2s ease-in-out;
 }
-
-.subscribe-btn:hover {
-  background: var(--rose-50);
-  box-shadow: var(--shadow-sm);
-}
-
-.subscribe-btn.subscribed {
-  background: var(--rose-500);
-  color: white;
-}
-
-.subscribe-btn.subscribed:hover {
-  background: var(--rose-600);
-}
-
-.subscribe-btn.subscribed .subscribe-text { display: none; }
-.subscribe-btn .subscribed-text { display: none; }
-.subscribe-btn.subscribed .subscribed-text { display: inline; }
 </style>
 
+<!-- JS -->
 <script>
+  // Control dels filtres visuals
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
