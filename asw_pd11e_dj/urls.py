@@ -30,6 +30,7 @@ def redirect_to_blog(request):
 urlpatterns = [
     path("", redirect_to_blog),  # raíz → redirige a /blog/
     path("admin/", admin.site.urls),  # admin
+    path("accounts/", include('allauth.urls')),
     path("blog/", include(("blog.urls", "blog"), namespace="blog")),
     path(
         "communities/",
