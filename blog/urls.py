@@ -16,7 +16,9 @@ urlpatterns = [
         name="post_detail",
     ),
     path("posts/<int:pk>/upvote/", post_views.upvote_post, name="upvote_post"),
-    path("posts/<int:pk>/downvote/",
-         post_views.downvote_post,
-         name="downvote_post"),
+    path(
+        "posts/<int:pk>/downvote/",
+        post_views.upvote_post,
+        name="downvote_post",
+    ),
 ]

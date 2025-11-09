@@ -24,9 +24,7 @@ def test_create_post():
     assert isinstance(post.published_date, timezone.datetime)
 
 
-# ------------------------------
-# 🔹 Title Field
-# ------------------------------
+# Title Field
 @pytest.mark.django_db
 def test_title_cannot_be_null():
     with pytest.raises(IntegrityError):
@@ -47,9 +45,7 @@ def test_title_max_length():
     assert max_length == 200
 
 
-# ------------------------------
-# 🔹 Content Field
-# ------------------------------
+# Content Field
 @pytest.mark.django_db
 def test_content_cannot_be_null():
     with pytest.raises(IntegrityError):
@@ -68,9 +64,7 @@ def test_content_max_length():
     assert max_length == 5000
 
 
-# ------------------------------
-# 🔹 Author Field
-# ------------------------------
+# Author Field
 @pytest.mark.django_db
 def test_author_cannot_be_null():
     with pytest.raises(IntegrityError):
@@ -89,34 +83,26 @@ def test_author_max_length():
     assert max_length == 100
 
 
-# ------------------------------
-# 🔹 Published Date Field
-# ------------------------------
+# Published Date Field
 def test_published_date_default():
     published_date_field = Post._meta.get_field("published_date")
     assert published_date_field.default == timezone.now
 
 
-# ------------------------------
-# 🔹 Votes Field
-# ------------------------------
+# Votes Field
 def test_votes_default_value():
     field = Post._meta.get_field("votes")
     assert field.default == 0
 
 
-# ------------------------------
-# 🔹 Image Field
-# ------------------------------
+# Image Field
 def test_image_field_allows_blank_and_null():
     field = Post._meta.get_field("image")
     assert field.blank is True
     assert field.null is True
 
 
-# ------------------------------
-# 🔹 URL Field
-# ------------------------------
+# URL Field
 def test_url_field_allows_blank_and_null():
     field = Post._meta.get_field("url")
     assert field.blank is True
