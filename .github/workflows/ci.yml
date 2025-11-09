@@ -23,14 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install --no-cache-dir -r requirements.txt
-      
-      - name: Set DJANGO_SETTINGS_MODULE
-        run: echo "DJANGO_SETTINGS_MODULE=asw_pd11e_dj.settings" >> $GITHUB_ENV
-
-      - name: Verify django-allauth
-        run: python -c "import allauth; print('Allauth OK')"
+          python -m pip install -r requirements.txt
 
       - name: Apply migrations
         run: python manage.py migrate
