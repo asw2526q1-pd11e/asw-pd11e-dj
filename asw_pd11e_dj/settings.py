@@ -27,11 +27,23 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django.contrib.sites',
     "blog",
     "communities",
+
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+
+    "allauth.socialaccount.providers.google",
+
 ]
 
+SITE_ID = 1
+
 MIDDLEWARE = [
+    "allauth.account.middleware.AccountMiddleware",
+
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Serveix fitxers estàtics en producció
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -41,6 +53,19 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        # For each OAuth based provider, either add a ``SocialApp``
+        # (``socialaccount`` app) containing the required client
+        # credentials, or list them here:
+        'APP': {
+            'client_id': "392869001985-s2nnjrdrt2kv36hirrchk73t17gd84tu.apps.googleusercontent.com",
+            'secret': "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",
+            'key': ''
+        }
+    }
+}
 
 ROOT_URLCONF = "asw_pd11e_dj.urls"
 
@@ -57,6 +82,14 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",
+
+    # `allauth` specific authentication methods, such as login by email
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 WSGI_APPLICATION = "asw_pd11e_dj.wsgi.application"
@@ -95,3 +128,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+SOCIALACCOUNT_LOGIN_ON_GET = True
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
