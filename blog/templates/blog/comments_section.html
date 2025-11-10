@@ -58,30 +58,183 @@
       min-width: 30px;
       text-align: center;
     }
+
+    .reply-btn {
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      font-size: 0.9em;
+      padding: 0;
+      margin-left: 15px;
+      text-decoration: underline;
+    }
+
+    .reply-btn:hover {
+      color: #0056b3;
+    }
+
+    .comment-form {
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      width: 100%;
+      max-width: 1300px;  
+    }
+
+    .comment-form h4 {
+      margin-bottom: 8px;
+      color: #333;
+      font-size: 0.95em;
+      font-weight: 600;
+    }
+
+    .comment-form .form-group {
+      margin-bottom: 8px;
+    }
+
+    .comment-form label {
+      display: block;
+      margin-bottom: 3px;
+      font-weight: 500;
+      color: #666;
+      font-size: 0.8em;
+    }
+
+    .comment-form input[type="text"],
+    .comment-form textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-family: inherit;
+    }
+
+    .comment-form textarea {
+      min-height: 50px;
+      resize: vertical;
+    }
+
+    .comment-form input[type="file"] {
+      font-size: 0.7em;
+      color: #999;
+      padding: 2px 0;
+    }
+
+    .comment-form input[type="file"]::file-selector-button {
+      background-color: #e9ecef;
+      color: #6c757d;
+      border: 1px solid #ced4da;
+      border-radius: 3px;
+      padding: 2px 8px;
+      font-size: 0.75em;
+      cursor: pointer;
+      margin-right: 6px;
+    }
+
+    .comment-form input[type="file"]::file-selector-button:hover {
+      background-color: #dee2e6;
+    }
+
+    .comment-form button {
+      background-color: #d63384;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      transition: background-color 0.3s;
+    }
+
+    .comment-form button:hover {
+      background-color: #b02a6a;
+    }
+
+    .image-upload-label {
+      font-size: 0.75em;
+      color: #999;
+    }
+
+    .reply-form {
+      margin-top: 10px;
+      margin-left: 30px;
+      background-color: #fff;
+      border-left: 2px solid #d63384;
+      padding: 8px 10px;
+      border-radius: 4px;
+    }
+
+    .reply-form h5 {
+      font-size: 0.9em;
+      margin-bottom: 8px;
+      color: #666;
+      font-weight: 600;
+    }
+
+    .cancel-btn {
+      background-color: #6c757d;
+      margin-left: 10px;
+    }
+
+    .cancel-btn:hover {
+      background-color: #545b62;
+    }
 </style>
 
 <div id="comments-section">
     <h3 class="text-center mb-4">💬 Comentarios</h3>
+    
+    <!-- Formulario principal para comentar -->
+    <div class="comment-form">
+        <form id="main-comment-form" enctype="multipart/form-data">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            
+            <input type="hidden" id="main-author" name="author" value="usuario temp">
+            
+            <div class="form-group">
+                <label for="main-content">Comentario</label>
+                <textarea id="main-content" name="content" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="main-image" class="image-upload-label">📎 Imagen (opcional)</label>
+                <input type="file" id="main-image" name="image" accept="image/*">
+            </div>
+            
+            <button type="submit">Publicar comentario</button>
+        </form>
+    </div>
+
+    <!-- Contenedor de comentarios -->
     <div id="comments-container" class="text-start"></div>
 </div>
 
 <script>
+    const postId = {{ post_id }};
+
     // Cargar los comentarios del post actual
-    fetch(`/blog/posts/{{ post_id }}/comments/`)
-      .then(res => res.json())
-      .then(comments => {
-        const container = document.getElementById("comments-container");
-        if (comments.length === 0) {
-          container.innerHTML = "<p class='text-muted text-center'>Aún no hay comentarios. Sé el primero en opinar ✨</p>";
-        } else {
-          renderComments(comments, container, 0);
-        }
-      })
-      .catch(err => {
-        console.error("Error cargando comentarios:", err);
-        document.getElementById("comments-container").innerHTML =
-          "<p class='text-danger text-center'>No se pudieron cargar los comentarios 😞</p>";
-      });
+    function loadComments() {
+      fetch(`/blog/posts/${postId}/comments/`)
+        .then(res => res.json())
+        .then(comments => {
+          const container = document.getElementById("comments-container");
+          container.innerHTML = '';
+          if (comments.length === 0) {
+            container.innerHTML = "<p class='text-muted text-center'>Aún no hay comentarios. Sé el primero en opinar ✨</p>";
+          } else {
+            renderComments(comments, container, 0);
+          }
+        })
+        .catch(err => {
+          console.error("Error cargando comentarios:", err);
+          document.getElementById("comments-container").innerHTML =
+            "<p class='text-danger text-center'>No se pudieron cargar los comentarios 😞</p>";
+        });
+    }
 
     // Función recursiva para renderizar los hilos de comentarios
     function renderComments(comments, container, level) {
@@ -89,18 +242,20 @@
         const div = document.createElement("div");
         div.classList.add("comment");
         div.style.marginLeft = `${level * 30}px`;
+        div.id = `comment-${comment.id}`;
 
         div.innerHTML = `
           <div class="meta">
-            <strong>${comment.author}</strong> — <em>${new Date(comment.published_date).toLocaleString()}</em>
+            <strong>${escapeHtml(comment.author)}</strong> — <em>${new Date(comment.published_date).toLocaleString()}</em>
           </div>
-          <p>${comment.content}</p>
+          <p>${escapeHtml(comment.content)}</p>
           ${comment.image ? `<img src="${comment.image}" alt="imagen del comentario" style="max-width:150px;border-radius:8px;margin-top:5px;">` : ""}
 
           <div class="comment-votes">
             <button class="comment-vote-btn up" onclick="voteComment(${comment.id}, 'up')" title="Me gusta">▲</button>
             <span class="comment-vote-count" id="comment-votes-${comment.id}">${comment.votes}</span>
             <button class="comment-vote-btn down" onclick="voteComment(${comment.id}, 'down')" title="No me gusta">▼</button>
+            <button class="reply-btn" onclick="showReplyForm(${comment.id})">Responder</button>
           </div>
         `;
 
@@ -113,7 +268,86 @@
       });
     }
 
-    // Función para votar comentarios (endpoints pendientes de implementar)
+    // Función para mostrar el formulario de respuesta
+    function showReplyForm(commentId) {
+      // Cerrar cualquier formulario de respuesta abierto
+      const existingForms = document.querySelectorAll('.reply-form');
+      existingForms.forEach(form => form.remove());
+
+      const commentDiv = document.getElementById(`comment-${commentId}`);
+      
+      const replyFormDiv = document.createElement('div');
+      replyFormDiv.classList.add('reply-form');
+      replyFormDiv.innerHTML = `
+        <h5>Responder</h5>
+        <form class="reply-comment-form" data-parent-id="${commentId}" enctype="multipart/form-data">
+          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+          <input type="hidden" name="parent_id" value="${commentId}">
+          
+          <input type="hidden" name="author" value="usuario temp">
+          
+          <div class="form-group" style="margin-bottom: 6px;">
+            <label style="font-size: 0.75em; color: #999;">Respuesta</label>
+            <textarea name="content" required style="min-height: 45px; padding: 4px 6px; font-size: 0.8em;"></textarea>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label style="font-size: 0.7em; color: #bbb;">📎 Imagen</label>
+            <input type="file" name="image" accept="image/*" style="font-size: 0.65em;">
+          </div>
+          
+          <button type="submit" style="padding: 4px 10px; font-size: 0.8em;">Publicar</button>
+          <button type="button" class="cancel-btn" onclick="this.closest('.reply-form').remove()" style="padding: 4px 10px; font-size: 0.8em;">Cancelar</button>
+        </form>
+      `;
+
+      commentDiv.appendChild(replyFormDiv);
+
+      // Agregar event listener al formulario de respuesta
+      const replyForm = replyFormDiv.querySelector('form');
+      replyForm.addEventListener('submit', handleCommentSubmit);
+    }
+
+    // Función para manejar el envío de comentarios (principal y respuestas)
+    function handleCommentSubmit(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      
+      fetch(`/blog/posts/${postId}/comments/create/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken')
+        }
+      })
+      .then(res => {
+        if (res.ok) {
+          // Limpiar formulario
+          e.target.reset();
+          
+          // Si es un formulario de respuesta, removerlo
+          const replyForm = e.target.closest('.reply-form');
+          if (replyForm) {
+            replyForm.remove();
+          }
+          
+          // Recargar comentarios
+          loadComments();
+        } else {
+          alert('Error al publicar el comentario. Por favor intenta de nuevo.');
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Error al publicar el comentario. Por favor intenta de nuevo.');
+      });
+    }
+
+    // Event listener para el formulario principal
+    document.getElementById('main-comment-form').addEventListener('submit', handleCommentSubmit);
+
+    // Función para votar comentarios
     function voteComment(commentId, voteType) {
       const endpoint = voteType === 'up'
         ? `/blog/comments/${commentId}/upvote/`
@@ -134,7 +368,7 @@
       })
       .catch(err => {
         console.error('Error al votar:', err);
-        alert('No se pudo registrar el voto. El endpoint aún no está implementado.');
+        alert('No se pudo registrar el voto. Intenta de nuevo.');
       });
     }
 
@@ -153,4 +387,14 @@
       }
       return cookieValue;
     }
+
+    // Función para escapar HTML y prevenir XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Cargar comentarios al inicio
+    loadComments();
 </script>
