@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     "blog",
     "communities",
+    "accounts",
 
     "allauth",
     "allauth.account",
