@@ -99,3 +99,19 @@ def comment_create(request, post_id):
         return redirect(referer)
     else:
         return redirect("blog:post_detail", pk=post.id)
+
+
+@require_POST
+def comment_upvote(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+    comment.votes += 1
+    comment.save()
+    return JsonResponse({"votes": comment.votes})
+
+
+@require_POST
+def comment_downvote(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+    comment.votes -= 1
+    comment.save()
+    return JsonResponse({"votes": comment.votes})
