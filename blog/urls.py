@@ -34,4 +34,9 @@ urlpatterns = [
         post_views.comments_index,
         name="comments_index",
     ),  # /posts/1/comments/
+    path(
+        "posts/<int:post_id>/comments/create/",
+        post_views.comment_create,
+        name="comment_create",
+    ),  # /posts/1/comments/create/
 ]
