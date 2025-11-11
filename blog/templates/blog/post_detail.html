@@ -144,8 +144,7 @@
     </div>
 </div>
 
-<div class="mt-5 text-center text-muted">
-    <h4>💬 Próximamente: comentarios</h4>
-    <p>En esta sección podrás dejar tu opinión y participar en la conversación.</p>
-</div>
+<!-- =================== SECCIÓN DE COMENTARIOS =================== -->
+{% include "blog/comments_section.html" with post_id=post.id %}
+
 {% endblock %}

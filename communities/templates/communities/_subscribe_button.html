@@ -1,0 +1,41 @@
+<button type="button"
+        class="subscribe-btn {% if is_subscribed %}subscribed{% endif %}"
+        onclick="toggleSubscribe(this)">
+  <span class="subscribe-text">Subscriu-te</span>
+  <span class="subscribed-text">Subscrit</span>
+</button>
+<style>
+
+.subscribe-btn {
+  padding: 0.5rem 1.25rem;
+  border: 2px solid var(--rose-500);
+  background: white;
+  color: var(--rose-600);
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  min-width: 120px;
+  transition: all var(--transition-base);
+}
+
+.subscribe-btn:hover {
+  background: var(--rose-50);
+  box-shadow: var(--shadow-sm);
+}
+
+.subscribe-btn.subscribed {
+  background: var(--rose-500);
+  color: white;
+  border-color: var(--rose-500);
+}
+
+.subscribe-btn.subscribed:hover {
+  background: var(--rose-600);
+  border-color: var(--rose-600);
+}
+
+.subscribe-btn.subscribed .subscribe-text { display: none; }
+.subscribe-btn .subscribed-text { display: none; }
+.subscribe-btn.subscribed .subscribed-text { display: inline; }
+</style>

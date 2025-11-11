@@ -28,8 +28,11 @@ def redirect_to_blog(request):
 
 
 urlpatterns = [
-    path("", redirect_to_blog),  # raíz → redirige a /blog/
-    path("admin/", admin.site.urls),  # admin
+    path("", redirect_to_blog),
+    path("admin/", admin.site.urls),
+    path("accounts/", include('allauth.urls')),
+    path("accounts/", include(("accounts.urls",
+                               "accounts"), namespace="accounts")),
     path("blog/", include(("blog.urls", "blog"), namespace="blog")),
     path(
         "communities/",
