@@ -50,6 +50,7 @@
 
     <!-- Contenido -->
     <div style="flex: 1; min-width: 0;">
+        <!-- Título -->
         <h2 style="margin: 0; font-size: 1.5em;">
             <a href="{% url 'blog:post_detail' post.pk %}"
                style="text-decoration:none; color:inherit; cursor:pointer;">
@@ -63,11 +64,38 @@
             {% endif %}
         </h2>
 
+        <!-- Autor y fecha -->
         <p style="color: #666; margin-top: 5px;">
             Por <strong>{{ post.author }}</strong> —
             <em>{{ post.published_date|date:"d M Y, H:i" }}</em>
         </p>
 
-        <p style="margin-top: 10px;">{{ post.content }}</p>
+        <!-- Comunidades -->
+        {% if post.communities.exists %}
+            <div style="margin-top: 5px; font-size: 0.95em;">
+                <span style="color:#d63384; font-weight:bold;">Comunidades:</span>
+                {% for community in post.communities.all %}
+                    <a href="{% url 'communities:community_site' community.pk %}"
+                       style="
+                           display: inline-block;
+                           background-color: #f8d7da;
+                           color: #b30059;
+                           text-decoration: none;
+                           padding: 2px 8px;
+                           border-radius: 12px;
+                           margin-left: 4px;
+                           font-size: 0.85em;
+                           transition: background-color 0.2s;
+                       "
+                       onmouseover="this.style.backgroundColor='#f1b6c1'"
+                       onmouseout="this.style.backgroundColor='#f8d7da'">
+                        {{ community.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Contenido -->
+        <p style="margin-top: 10px; color:#333;">{{ post.content }}</p>
     </div>
 </div>
