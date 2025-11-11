@@ -63,7 +63,7 @@
                  role="button"
                  data-bs-toggle="dropdown"
                  aria-expanded="false">
-                {{ user.username }}
+                {{ user.profile.nombre|default:user.username }}
               </a>
 
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
