@@ -69,12 +69,51 @@
       color: #dc3545;
     }
 
-    .communities-badges span {
+    .communities-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .community-badge {
       background: #fce4ec;
       padding: 6px 12px;
       border-radius: 20px;
       font-weight: 500;
       font-size: 0.9em;
+      color: #b30059;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .community-badge:hover {
+      background: #f8bbd0;
+      text-decoration: none;
+    }
+
+    .community-badge img {
+      width: 24px;
+      height: 24px;
+      object-fit: cover;
+      border-radius: 50%;
+      margin-right: 6px;
+      border: 1px solid #f48fb1;
+    }
+
+    .community-badge .no-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid #f48fb1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7em;
+      color: #999;
+      margin-right: 6px;
     }
 
     .post-content {
@@ -110,6 +149,7 @@
 
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
 
+            <!-- Sistema de votos -->
             <div class="post-detail-votes">
                 <form action="{% url 'blog:upvote_post' post.pk %}" method="post" class="m-0">
                     {% csrf_token %}
@@ -124,10 +164,18 @@
                 </form>
             </div>
 
+            <!-- Comunidades -->
             {% if post.communities.exists %}
-            <div class="communities-badges d-flex flex-wrap gap-2">
+            <div class="communities-badges">
                 {% for community in post.communities.all %}
-                <span>{{ community.name }}</span>
+                <a href="{% url 'communities:community_site' community.pk %}" class="community-badge">
+                    {% if community.avatar %}
+                        <img src="{{ community.avatar.url }}" alt="{{ community.name }}">
+                    {% else %}
+                        <div class="no-avatar">N/A</div>
+                    {% endif %}
+                    {{ community.name }}
+                </a>
                 {% endfor %}
             </div>
             {% endif %}
