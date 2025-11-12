@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from blog.models import Post, Comment
 from blog.forms import PostForm
+from django.contrib.auth.decorators import login_required
 
 
 def post_list(request):
@@ -11,6 +12,7 @@ def post_list(request):
     return render(request, "blog/post_list.html", {"posts": posts})
 
 
+@login_required
 def post_create(request):
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES)
@@ -28,6 +30,7 @@ def post_detail(request, pk):
 
 
 @require_POST
+@login_required
 def upvote_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.votes += 1
@@ -36,6 +39,7 @@ def upvote_post(request, pk):
 
 
 @require_POST
+@login_required
 def downvote_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.votes -= 1
@@ -73,6 +77,7 @@ def comments_index(request, post_id):
 
 
 @require_POST
+@login_required
 def comment_create(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     author = request.POST.get("author")
@@ -102,6 +107,7 @@ def comment_create(request, post_id):
 
 
 @require_POST
+@login_required
 def comment_upvote(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     comment.votes += 1
@@ -110,6 +116,7 @@ def comment_upvote(request, comment_id):
 
 
 @require_POST
+@login_required
 def comment_downvote(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     comment.votes -= 1
