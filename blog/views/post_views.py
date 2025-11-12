@@ -18,8 +18,9 @@ def post_create(request):
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
-            post.author = request.user  # ✅ usuario autenticado
+            post.author = request.user
             post.save()
+            form.save_m2m()
             return redirect("blog:post_list")
     else:
         form = PostForm()
@@ -61,7 +62,9 @@ def get_comments_tree(post_id):
             "replies": [build_tree(reply) for reply in comment.replies.all()],
         }
 
-    root_comments = Comment.objects.filter(post_id=post_id, parent__isnull=True)
+    root_comments = Comment.objects.filter(
+        post_id=post_id, parent__isnull=True
+    )
     return [build_tree(c) for c in root_comments]
 
 
