@@ -2,15 +2,17 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.utils import timezone
+from django.contrib.auth.models import User
 from blog.models.post import Post
 
 
 @pytest.mark.django_db
 def test_create_post():
+    user = User.objects.create_user(username="testuser", password="1234")
     post = Post.objects.create(
         title="Test Post",
         content="This is a test post content.",
-        author="Test Author",
+        author=user,
         published_date=timezone.now(),
         votes=5,
         url="https://example.com",
@@ -18,7 +20,7 @@ def test_create_post():
     assert post.id is not None
     assert post.title == "Test Post"
     assert post.content == "This is a test post content."
-    assert post.author == "Test Author"
+    assert post.author == user
     assert post.votes == 5
     assert post.url == "https://example.com"
     assert isinstance(post.published_date, timezone.datetime)
@@ -27,15 +29,15 @@ def test_create_post():
 # Title Field
 @pytest.mark.django_db
 def test_title_cannot_be_null():
+    user = User.objects.create_user(username="testuser", password="1234")
     with pytest.raises(IntegrityError):
-        Post.objects.create(
-            title=None, content="Content without a title.", author="Author"
-        )
+        Post.objects.create(title=None, content="Content", author=user)
 
 
 @pytest.mark.django_db
 def test_title_cannot_be_blank():
-    post = Post(title="", content="Content with blank title.", author="Author")
+    user = User.objects.create_user(username="testuser", password="1234")
+    post = Post(title="", content="Content", author=user)
     with pytest.raises(ValidationError):
         post.full_clean()
 
@@ -48,13 +50,15 @@ def test_title_max_length():
 # Content Field
 @pytest.mark.django_db
 def test_content_cannot_be_null():
+    user = User.objects.create_user(username="testuser", password="1234")
     with pytest.raises(IntegrityError):
-        Post.objects.create(title="Title", content=None, author="Author")
+        Post.objects.create(title="Title", content=None, author=user)
 
 
 @pytest.mark.django_db
 def test_content_cannot_be_blank():
-    post = Post(title="Title", content="", author="Author")
+    user = User.objects.create_user(username="testuser", password="1234")
+    post = Post(title="Title", content="", author=user)
     with pytest.raises(ValidationError):
         post.full_clean()
 
@@ -71,16 +75,8 @@ def test_author_cannot_be_null():
         Post.objects.create(title="Title", content="Content", author=None)
 
 
-@pytest.mark.django_db
-def test_author_cannot_be_blank():
-    post = Post(title="Title", content="Content", author="")
-    with pytest.raises(ValidationError):
-        post.full_clean()
-
-
-def test_author_max_length():
-    max_length = Post._meta.get_field("author").max_length
-    assert max_length == 100
+# Nota: no hay 'blank' ni 'max_length' en ForeignKey
+# Por eso se eliminan los tests que usaban 'blank' o 'max_length' en author
 
 
 # Published Date Field
@@ -111,10 +107,11 @@ def test_url_field_allows_blank_and_null():
 
 @pytest.mark.django_db
 def test_invalid_url_raises_validation_error():
+    user = User.objects.create_user(username="testuser", password="1234")
     post = Post(
         title="Title",
         content="Content",
-        author="Author",
+        author=user,
         url="not-a-valid-url"
     )
     with pytest.raises(ValidationError):

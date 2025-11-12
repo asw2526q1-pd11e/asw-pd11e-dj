@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from PIL import Image
+from django.contrib.auth.models import User
 
 
 def post_image_path(instance, filename):
@@ -15,7 +16,11 @@ def post_image_path(instance, filename):
 class Post(models.Model):
     title = models.CharField(max_length=200, blank=False, null=False)
     content = models.TextField(max_length=5000, blank=False, null=False)
-    author = models.CharField(max_length=100, blank=False, null=False)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="posts"
+    )
     published_date = models.DateTimeField(default=timezone.now)
     votes = models.IntegerField(default=0)
     image = models.ImageField(upload_to=post_image_path, blank=True, null=True)

@@ -5,6 +5,7 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.utils import timezone
 from PIL import Image
+from django.contrib.auth.models import User
 
 
 def comment_image_path(instance, filename):
@@ -28,7 +29,11 @@ class Comment(models.Model):
     )
 
     content = models.TextField(max_length=5000)
-    author = models.CharField(max_length=100)
+    author = models.ForeignKey(
+            User,
+            on_delete=models.CASCADE,
+            related_name="comments"
+        )
     published_date = models.DateTimeField(default=timezone.now)
     votes = models.IntegerField(default=0)
     url = models.URLField(blank=True, null=True)
