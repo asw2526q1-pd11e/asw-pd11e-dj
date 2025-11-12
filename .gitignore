@@ -22,3 +22,4 @@ venv/
 
 /# Ignore environment config
 .env
+env.sh
