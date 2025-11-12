@@ -2,6 +2,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.utils import timezone
+from django.contrib.auth.models import User
 from blog.models.comment import Comment
 from blog.models.post import Post
 
@@ -9,20 +10,29 @@ from blog.models.post import Post
 @pytest.mark.django_db
 def test_create_comment_with_post():
     """Debe crear un comentario asociado a un post correctamente."""
+    user_post = User.objects.create_user(
+        username="post_author", password="1234"
+    )
+    user_comment = User.objects.create_user(
+        username="comment_author", password="1234"
+    )
+
     post = Post.objects.create(
-        title="Test Post", content="Post content", author="Post Author"
+        title="Test Post",
+        content="Post content",
+        author=user_post,
     )
 
     comment = Comment.objects.create(
         post=post,
         content="This is a test comment.",
-        author="Test Author",
+        author=user_comment,
         votes=5,
     )
 
     assert comment.id is not None
     assert comment.content == "This is a test comment."
-    assert comment.author == "Test Author"
+    assert comment.author == user_comment
     assert comment.votes == 5
     assert comment.url == post.url  # hereda la url del post
     assert comment.post == post
@@ -31,31 +41,47 @@ def test_create_comment_with_post():
 
 # ---------- FIELD VALIDATIONS ---------- #
 
-
 @pytest.mark.django_db
 def test_comment_requires_post():
     """Debe lanzar error si se crea sin post."""
+    user = User.objects.create_user(username="testuser", password="1234")
     with pytest.raises(IntegrityError):
-        Comment.objects.create(content="No post", author="Anon")
+        Comment.objects.create(content="No post", author=user)
 
 
 @pytest.mark.django_db
 def test_content_cannot_be_null():
     """El campo content no puede ser NULL."""
+    user_post = User.objects.create_user(
+        username="post_author", password="1234"
+    )
+    user_comment = User.objects.create_user(
+        username="comment_author", password="1234"
+    )
     post = Post.objects.create(
-        title="Test Post", content="Post content", author="Post Author"
+        title="Test Post",
+        content="Post content",
+        author=user_post,
     )
     with pytest.raises(IntegrityError):
-        Comment.objects.create(post=post, content=None, author="Author")
+        Comment.objects.create(post=post, content=None, author=user_comment)
 
 
 @pytest.mark.django_db
 def test_content_cannot_be_blank():
     """El campo content vacío debe fallar en validación."""
-    post = Post.objects.create(
-        title="Test Post", content="Post content", author="Post Author"
+    user_post = User.objects.create_user(
+        username="post_author", password="1234"
     )
-    comment = Comment(post=post, content="", author="Author")
+    user_comment = User.objects.create_user(
+        username="comment_author", password="1234"
+    )
+    post = Post.objects.create(
+        title="Test Post",
+        content="Post content",
+        author=user_post,
+    )
+    comment = Comment(post=post, content="", author=user_comment)
     with pytest.raises(ValidationError):
         comment.full_clean()
 
@@ -68,33 +94,21 @@ def test_content_max_length():
 
 # ---------- AUTHOR FIELD ---------- #
 
-
 @pytest.mark.django_db
 def test_author_cannot_be_null():
+    user_post = User.objects.create_user(
+        username="post_author", password="1234"
+    )
     post = Post.objects.create(
-        title="Test Post", content="Post content", author="Post Author"
+        title="Test Post",
+        content="Post content",
+        author=user_post,
     )
     with pytest.raises(IntegrityError):
         Comment.objects.create(post=post, content="Content", author=None)
 
 
-@pytest.mark.django_db
-def test_author_cannot_be_blank():
-    post = Post.objects.create(
-        title="Test Post", content="Post content", author="Post Author"
-    )
-    comment = Comment(post=post, content="Content", author="")
-    with pytest.raises(ValidationError):
-        comment.full_clean()
-
-
-def test_author_max_length():
-    max_length = Comment._meta.get_field("author").max_length
-    assert max_length == 100
-
-
 # ---------- PUBLISHED DATE ---------- #
-
 
 def test_published_date_default():
     field = Comment._meta.get_field("published_date")
@@ -103,14 +117,12 @@ def test_published_date_default():
 
 # ---------- VOTES ---------- #
 
-
 def test_votes_default_value():
     field = Comment._meta.get_field("votes")
     assert field.default == 0
 
 
 # ---------- IMAGE ---------- #
-
 
 def test_image_field_allows_blank_and_null():
     field = Comment._meta.get_field("image")
@@ -120,7 +132,6 @@ def test_image_field_allows_blank_and_null():
 
 # ---------- URL ---------- #
 
-
 def test_url_field_allows_blank_and_null():
     field = Comment._meta.get_field("url")
     assert field.blank is True
@@ -129,28 +140,39 @@ def test_url_field_allows_blank_and_null():
 
 @pytest.mark.django_db
 def test_url_defaults_to_post_url():
-    """Si no se pasa URL, debe copiar la del post."""
+    user_post = User.objects.create_user(username="post_author",
+                                         password="1234")
+    user_comment = User.objects.create_user(
+        username="comment_author", password="1234"
+    )
     post = Post.objects.create(
         title="Post con URL",
         content="Contenido",
-        author="Autor",
+        author=user_post,
         url="https://example.com/post",
     )
-    comment = Comment.objects.create(
-        post=post, content="Comentario vinculado", author="Autor C"
-    )
+    comment = Comment.objects.create(post=post, content="Comentario vinculado",
+                                     author=user_comment)
     assert comment.url == "https://example.com/post"
 
 
 @pytest.mark.django_db
 def test_comment_str_representation():
-    """El __str__ debe incluir el autor y parte del contenido."""
+    user_post = User.objects.create_user(username="post_author",
+                                         password="1234")
+    user_comment = User.objects.create_user(
+        username="comment_author", password="1234"
+    )
     post = Post.objects.create(
-        title="Post Title", content="Some post content", author="Author"
+        title="Post Title",
+        content="Some post content",
+        author=user_post,
     )
     comment = Comment.objects.create(
-        post=post, content="This is a test comment content.", author="Tester"
+        post=post,
+        content="This is a test comment content.",
+        author=user_comment,
     )
     result = str(comment)
-    assert "Tester" in result
+    assert "comment_author" in result  # ahora el username del User
     assert "Comment" in result

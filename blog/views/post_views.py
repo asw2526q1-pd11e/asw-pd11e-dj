@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from blog.models import Post, Comment
 from blog.forms import PostForm
+from django.contrib.auth.decorators import login_required
 
 
 def post_list(request):
@@ -11,11 +12,15 @@ def post_list(request):
     return render(request, "blog/post_list.html", {"posts": posts})
 
 
+@login_required
 def post_create(request):
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            form.save_m2m()
             return redirect("blog:post_list")
     else:
         form = PostForm()
@@ -28,6 +33,7 @@ def post_detail(request, pk):
 
 
 @require_POST
+@login_required
 def upvote_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.votes += 1
@@ -36,6 +42,7 @@ def upvote_post(request, pk):
 
 
 @require_POST
+@login_required
 def downvote_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.votes -= 1
@@ -47,14 +54,12 @@ def get_comments_tree(post_id):
     def build_tree(comment):
         return {
             "id": comment.id,
-            "author": comment.author,
+            "author": comment.author.username,  # 👈 mostrar nombre del usuario
             "content": comment.content,
             "published_date": comment.published_date,
             "votes": comment.votes,
             "image": comment.image.url if comment.image else None,
-            "replies": [
-                build_tree(reply) for reply in comment.replies.all()
-            ],
+            "replies": [build_tree(reply) for reply in comment.replies.all()],
         }
 
     root_comments = Comment.objects.filter(
@@ -66,16 +71,14 @@ def get_comments_tree(post_id):
 def comments_index(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     comments_data = get_comments_tree(post.id)
-    return JsonResponse(
-        comments_data,
-        safe=False,
-    )
+    return JsonResponse(comments_data, safe=False)
 
 
 @require_POST
+@login_required
 def comment_create(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    author = request.POST.get("author")
+    author = request.user  # ✅ usuario logueado
     content = request.POST.get("content")
     parent_id = request.POST.get("parent_id")
     image = request.FILES.get("image")
@@ -102,6 +105,7 @@ def comment_create(request, post_id):
 
 
 @require_POST
+@login_required
 def comment_upvote(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     comment.votes += 1
@@ -110,6 +114,7 @@ def comment_upvote(request, comment_id):
 
 
 @require_POST
+@login_required
 def comment_downvote(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     comment.votes -= 1
