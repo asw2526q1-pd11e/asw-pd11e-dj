@@ -22,3 +22,6 @@ venv/
 
 /# Ignore environment config
 .env
+env.sh
+
+db.sqlite3
