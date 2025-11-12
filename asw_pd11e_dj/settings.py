@@ -1,4 +1,4 @@
-# flake8: noqa: E501
+# flake8: noqa
 """
 Django settings for asw_pd11e_dj project.
 """
