@@ -50,4 +50,93 @@
 
 </div>
 
+<div class="filter-toggle-group mt-3">
+    <button class="filter-btn active" data-mode="posts">Publicaciones</button>
+    <button class="filter-btn" data-mode="comments">Comentarios</button>
+</div>
+
+<div id="user-posts" class="user-posts mt-3">
+    {% for post in posts %}
+    <div class="card mb-2 p-2">
+        <h5>{{ post.title }}</h5>
+        <p>{{ post.content|truncatewords:20 }}</p>
+        <small class="text-muted">{{ post.created_at|date:"j F Y, H:i" }}</small>
+    </div>
+    {% empty %}
+    <p>Este usuario no ha publicado nada.</p>
+    {% endfor %}
+</div>
+
+<div id="user-comments" class="user-comments mt-3 hidden">
+    {% for comment in comments %}
+    <div class="card mb-2 p-2">
+        <p>{{ comment.content|truncatewords:15 }}</p>
+        <small class="text-muted">En: {{ comment.post.title }}</small>
+    </div>
+    {% empty %}
+    <p>Este usuario no ha comentado nada.</p>
+    {% endfor %}
+</div>
+
+<style>
+    .hidden {
+        display: none;
+    }
+
+    .filter-toggle-group {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        border: 2px solid var(--rose-400);
+        background: white;
+        color: var(--rose-600);
+        border-radius: 50px;
+        padding: 0.45rem 1.25rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all var(--transition-base);
+    }
+
+    .filter-btn:hover {
+        background: #fff1f2;
+    }
+
+    .filter-btn.active {
+        background: var(--rose-500);
+        color: white;
+        border-color: var(--rose-500);
+        box-shadow: var(--shadow-sm);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.filter-btn');
+        const posts = document.getElementById('user-posts');
+        const comments = document.getElementById('user-comments');
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Quitar clase active de todos
+                buttons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const mode = this.dataset.mode;
+
+                if (mode === 'posts') {
+                    posts.classList.remove('hidden');
+                    comments.classList.add('hidden');
+                } else if (mode === 'comments') {
+                    posts.classList.add('hidden');
+                    comments.classList.remove('hidden');
+                }
+            });
+        });
+    });
+</script>
+
+
 {% endblock %}

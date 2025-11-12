@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import ProfileForm
 from .models import Profile
+from blog.models import Post, Comment
 
 
 @login_required
@@ -12,18 +13,18 @@ def profile_view(request, username=None):
     else:
         user_obj = request.user
 
-    profile = user_obj.profile
+    profile, created = Profile.objects.get_or_create(user=user_obj)
 
-    num_posts = user_obj.post_set.count() \
-        if hasattr(user_obj, "post_set") else 0
-    num_comments = user_obj.comment_set.count() \
-        if hasattr(user_obj, "comment_set") else 0
+    posts = Post.objects.filter(author=user_obj)
+    comments = Comment.objects.filter(author=user_obj)
 
     return render(request, "accounts/profile.html", {
         "user_obj": user_obj,
         "profile": profile,
-        "num_posts": num_posts,
-        "num_comments": num_comments,
+        "posts": posts,
+        "comments": comments,
+        "num_posts": posts.count(),
+        "num_comments": comments.count(),
     })
 
 
