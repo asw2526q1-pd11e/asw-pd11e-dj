@@ -30,6 +30,7 @@ def post_detail(request, pk):
 
 
 @require_POST
+@login_required
 def upvote_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.votes += 1
@@ -38,6 +39,7 @@ def upvote_post(request, pk):
 
 
 @require_POST
+@login_required
 def downvote_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     post.votes -= 1
@@ -75,6 +77,7 @@ def comments_index(request, post_id):
 
 
 @require_POST
+@login_required
 def comment_create(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     author = request.POST.get("author")
@@ -104,6 +107,7 @@ def comment_create(request, post_id):
 
 
 @require_POST
+@login_required
 def comment_upvote(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     comment.votes += 1
@@ -112,6 +116,7 @@ def comment_upvote(request, comment_id):
 
 
 @require_POST
+@login_required
 def comment_downvote(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     comment.votes -= 1
