@@ -5,10 +5,10 @@
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Lista de Posts</h1>
 
-{% if posts %}
+{% if posts_data %}
 <div class="posts-list">
-    {% for post in posts %}
-    {% include "blog/post_card.html" with post=post %}
+    {% for item in posts_data %}
+        {% include "blog/post_card.html" with post=item.post user_vote=item.user_vote %}
     {% endfor %}
 </div>
 {% else %}

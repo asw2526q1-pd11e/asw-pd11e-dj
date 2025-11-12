@@ -59,13 +59,14 @@
       border: none;
       cursor: pointer;
       font-size: 1.8em;
+      color: #666;
     }
 
-    .vote-btn.up {
+    .vote-btn.up.active {
       color: #28a745;
     }
 
-    .vote-btn.down {
+    .vote-btn.down.active {
       color: #dc3545;
     }
 
@@ -93,33 +94,11 @@
       text-decoration: none;
     }
 
-    .community-badge img {
-      width: 24px;
-      height: 24px;
-      object-fit: cover;
-      border-radius: 50%;
-      margin-right: 6px;
-      border: 1px solid #f48fb1;
-    }
-
-    .community-badge .no-avatar {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #fff;
-      border: 1px solid #f48fb1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7em;
-      color: #999;
-      margin-right: 6px;
-    }
-
     .post-content {
       font-size: 1.15em;
       line-height: 1.7;
       text-align: justify;
+      margin-top: 20px;
     }
 </style>
 {% endblock %}
@@ -153,14 +132,14 @@
             <div class="post-detail-votes">
                 <form action="{% url 'blog:upvote_post' post.pk %}" method="post" class="m-0">
                     {% csrf_token %}
-                    <button type="submit" class="vote-btn up">▲</button>
+                    <button type="submit" class="vote-btn up {% if user_vote == 1 %}active{% endif %}">▲</button>
                 </form>
 
                 <span style="font-size: 1.5em; font-weight: bold;">{{ post.votes }}</span>
 
                 <form action="{% url 'blog:downvote_post' post.pk %}" method="post" class="m-0">
                     {% csrf_token %}
-                    <button type="submit" class="vote-btn down">▼</button>
+                    <button type="submit" class="vote-btn down {% if user_vote == -1 %}active{% endif %}">▼</button>
                 </form>
             </div>
 
@@ -171,8 +150,6 @@
                 <a href="{% url 'communities:community_site' community.pk %}" class="community-badge">
                     {% if community.avatar %}
                         <img src="{{ community.avatar.url }}" alt="{{ community.name }}">
-                    {% else %}
-                        <div class="no-avatar">N/A</div>
                     {% endif %}
                     {{ community.name }}
                 </a>
@@ -192,7 +169,6 @@
     </div>
 </div>
 
-<!-- =================== SECCIÓN DE COMENTARIOS =================== -->
+<!-- Comentarios -->
 {% include "blog/comments_section.html" with post_id=post.id %}
-
 {% endblock %}
