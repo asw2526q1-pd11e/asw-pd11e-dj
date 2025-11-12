@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from .forms import ProfileForm
 from .models import Profile
 from blog.models import Post, Comment
+from django.http import JsonResponse
 
 
 @login_required
@@ -17,12 +18,14 @@ def profile_view(request, username=None):
 
     posts = Post.objects.filter(author=user_obj)
     comments = Comment.objects.filter(author=user_obj)
+    saved_posts = profile.saved_posts.all()
 
     return render(request, "accounts/profile.html", {
         "user_obj": user_obj,
         "profile": profile,
         "posts": posts,
         "comments": comments,
+        "saved_posts": saved_posts,
         "num_posts": posts.count(),
         "num_comments": comments.count(),
     })
@@ -61,3 +64,18 @@ def settings_view(request):
         'form': form,
         'profile': profile
     })
+
+
+@login_required
+def toggle_saved_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    profile = request.user.profile
+
+    if post in profile.saved_posts.all():
+        profile.saved_posts.remove(post)
+        saved = False
+    else:
+        profile.saved_posts.add(post)
+        saved = True
+
+    return JsonResponse({"saved": saved})

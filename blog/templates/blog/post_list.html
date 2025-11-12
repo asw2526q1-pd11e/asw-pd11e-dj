@@ -18,4 +18,34 @@
 <p>
     <a href="{% url 'blog:post_create' %}" class="btn btn-primary">Crear un nuevo Post</a>
 </p>
+
+<script>
+    document.querySelectorAll(".save-post-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const postId = this.dataset.postId;
+            fetch(`/accounts/toggle-saved/${postId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie('csrftoken')
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    this.textContent = data.saved ? '★' : '☆';
+                });
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').forEach(cookie => {
+                const c = cookie.trim();
+                if (c.startsWith(name + '=')) cookieValue = decodeURIComponent(c.substring(name.length + 1));
+            });
+        }
+        return cookieValue;
+    }
+</script>
+
 {% endblock %}

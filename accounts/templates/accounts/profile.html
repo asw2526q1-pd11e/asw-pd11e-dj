@@ -53,18 +53,16 @@
 <div class="filter-toggle-group mt-3">
     <button class="filter-btn active" data-mode="posts">Publicaciones</button>
     <button class="filter-btn" data-mode="comments">Comentarios</button>
+    <button class="filter-btn" data-mode="saved">Guardados</button>
 </div>
 
 <div id="user-posts" class="user-posts mt-3">
     {% for post in posts %}
-    <div class="card mb-2 p-2">
-        <h5>{{ post.title }}</h5>
-        <p>{{ post.content|truncatewords:20 }}</p>
-        <small class="text-muted">{{ post.created_at|date:"j F Y, H:i" }}</small>
-    </div>
+    {% include "blog/post_card.html" with post=post %}
     {% empty %}
     <p>Este usuario no ha publicado nada.</p>
     {% endfor %}
+
 </div>
 
 <div id="user-comments" class="user-comments mt-3 hidden">
@@ -77,6 +75,15 @@
     <p>Este usuario no ha comentado nada.</p>
     {% endfor %}
 </div>
+
+<div id="user-saved" class="user-saved mt-3 hidden">
+    {% for post in saved_posts %}
+    {% include "blog/post_card.html" with post=post %}
+    {% empty %}
+    <p>Este usuario no ha guardado ningún post.</p>
+    {% endfor %}
+</div>
+
 
 <style>
     .hidden {
@@ -117,22 +124,18 @@
         const buttons = document.querySelectorAll('.filter-btn');
         const posts = document.getElementById('user-posts');
         const comments = document.getElementById('user-comments');
+        const saved = document.getElementById('user-saved');
 
         buttons.forEach(btn => {
             btn.addEventListener('click', function() {
-                // Quitar clase active de todos
                 buttons.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
 
                 const mode = this.dataset.mode;
 
-                if (mode === 'posts') {
-                    posts.classList.remove('hidden');
-                    comments.classList.add('hidden');
-                } else if (mode === 'comments') {
-                    posts.classList.add('hidden');
-                    comments.classList.remove('hidden');
-                }
+                posts.classList.toggle('hidden', mode !== 'posts');
+                comments.classList.toggle('hidden', mode !== 'comments');
+                saved.classList.toggle('hidden', mode !== 'saved');
             });
         });
     });
