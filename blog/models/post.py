@@ -50,7 +50,9 @@ class Post(models.Model):
                 img.save(buffer, format="WEBP", quality=85)
                 buffer.seek(0)
                 new_name = f"{uuid.uuid4()}.webp"
-                self.image.save(new_name, ContentFile(buffer.read()), save=False)
+                self.image.save(new_name,
+                                ContentFile(buffer.read()),
+                                save=False)
                 buffer.close()
             except Exception as e:
                 print(f"⚠️ Error converting image to WebP: {e}")
