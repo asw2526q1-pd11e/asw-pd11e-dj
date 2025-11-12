@@ -64,7 +64,7 @@ def upvote_post(request, pk):
         pass
     else:
         post.votes += 1
-        vote_obj.vote = 1
+        vote_obj.vote += 1
         vote_obj.save()
         post.save()
 
@@ -81,7 +81,7 @@ def downvote_post(request, pk):
         pass
     else:
         post.votes -= 1
-        vote_obj.vote = -1
+        vote_obj.vote -= 1
         vote_obj.save()
         post.save()
 
@@ -100,7 +100,7 @@ def comment_upvote(request, comment_id):
         pass
     else:
         comment.votes += 1
-        vote_obj.vote = 1
+        vote_obj.vote += 1
         vote_obj.save()
         comment.save()
 
@@ -118,7 +118,7 @@ def comment_downvote(request, comment_id):
         pass
     else:
         comment.votes -= 1
-        vote_obj.vote = -1
+        vote_obj.vote -= 1
         vote_obj.save()
         comment.save()
 
@@ -127,8 +127,13 @@ def comment_downvote(request, comment_id):
 
 # ------------------- COMMENTS TREE Y CREACIÓN ------------------- #
 
-def get_comments_tree(post_id):
+def get_comments_tree(post_id, user=None):
     def build_tree(comment):
+        user_vote = 0
+        if user and user.is_authenticated:
+            vote_obj = VoteComment.objects.filter(user=user,
+                                                  comment=comment).first()
+            user_vote = vote_obj.vote if vote_obj else 0
         return {
             "id": comment.id,
             "author": comment.author.username,
@@ -136,6 +141,7 @@ def get_comments_tree(post_id):
             "published_date": comment.published_date,
             "votes": comment.votes,
             "image": comment.image.url if comment.image else None,
+            "user_vote": user_vote,
             "replies": [build_tree(reply) for reply in comment.replies.all()],
         }
 
@@ -146,7 +152,7 @@ def get_comments_tree(post_id):
 
 def comments_index(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    comments_data = get_comments_tree(post.id)
+    comments_data = get_comments_tree(post.id, request.user)
     return JsonResponse(comments_data, safe=False)
 
 

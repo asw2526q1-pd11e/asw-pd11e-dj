@@ -1,400 +1,282 @@
 <style>
-    #comments-section {
-      margin-top: 60px;
-      border-top: 2px solid #eee;
-      padding-top: 30px;
-    }
+  #comments-section {
+    margin-top: 60px;
+    border-top: 2px solid #eee;
+    padding-top: 30px;
+  }
 
-    .comment {
-      background-color: #fafafa;
-      border-radius: 12px;
-      padding: 15px 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
+  .comment {
+    background-color: #fafafa;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
 
-    .comment strong {
-      color: #d63384;
-    }
+  .comment strong {
+    color: #d63384;
+  }
 
-    .comment .meta {
-      font-size: 0.9em;
-      color: #777;
-      margin-bottom: 5px;
-    }
+  .comment .meta {
+    font-size: 0.9em;
+    color: #777;
+    margin-bottom: 5px;
+  }
 
-    .comment-votes {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-    }
+  .comment-votes {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
 
-    .comment-vote-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.2em;
-      padding: 0;
-      transition: transform 0.2s;
-    }
+  .comment-vote-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0;
+    transition: transform 0.2s;
+  }
 
-    .comment-vote-btn:hover {
-      transform: scale(1.2);
-    }
+  .comment-vote-btn:hover {
+    transform: scale(1.2);
+  }
 
-    .comment-vote-btn.up {
-      color: #28a745;
-    }
+  .comment-vote-btn.up.active {
+    color: #28a745;
+  }
 
-    .comment-vote-btn.down {
-      color: #dc3545;
-    }
+  .comment-vote-btn.down.active {
+    color: #dc3545;
+  }
 
-    .comment-vote-count {
-      font-weight: bold;
-      font-size: 0.95em;
-      color: #555;
-      min-width: 30px;
-      text-align: center;
-    }
+  .comment-vote-btn.up,
+  .comment-vote-btn.down {
+    color: #ccc;
+  }
 
-    .reply-btn {
-      background: none;
-      border: none;
-      color: #007bff;
-      cursor: pointer;
-      font-size: 0.9em;
-      padding: 0;
-      margin-left: 15px;
-      text-decoration: underline;
-    }
+  .comment-vote-count {
+    font-weight: bold;
+    font-size: 0.95em;
+    color: #555;
+    min-width: 30px;
+    text-align: center;
+  }
 
-    .reply-btn:hover {
-      color: #0056b3;
-    }
+  .reply-btn {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    font-size: 0.9em;
+    padding: 0;
+    margin-left: 15px;
+    text-decoration: underline;
+  }
 
-    .comment-form {
-      background-color: #f8f9fa;
-      border-radius: 6px;
-      padding: 10px 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-      width: 100%;
-      max-width: 1300px;  
-    }
+  .reply-btn:hover {
+    color: #0056b3;
+  }
 
-    .comment-form h4 {
-      margin-bottom: 8px;
-      color: #333;
-      font-size: 0.95em;
-      font-weight: 600;
-    }
+  .comment-form {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    max-width: 1300px;
+  }
 
-    .comment-form .form-group {
-      margin-bottom: 8px;
-    }
+  .comment-form textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.85em;
+    min-height: 60px;
+    resize: vertical;
+  }
 
-    .comment-form label {
-      display: block;
-      margin-bottom: 3px;
-      font-weight: 500;
-      color: #666;
-      font-size: 0.8em;
-    }
+  .comment-form button {
+    background-color: #d63384;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: background-color 0.3s;
+  }
 
-    .comment-form input[type="text"],
-    .comment-form textarea {
-      width: 100%;
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 0.85em;
-      font-family: inherit;
-    }
+  .comment-form button:hover {
+    background-color: #b02a6a;
+  }
 
-    .comment-form textarea {
-      min-height: 50px;
-      resize: vertical;
-    }
+  .reply-form {
+    margin-top: 10px;
+    margin-left: 30px;
+    background-color: #fff;
+    border-left: 2px solid #d63384;
+    padding: 8px 10px;
+    border-radius: 4px;
+  }
 
-    .comment-form input[type="file"] {
-      font-size: 0.7em;
-      color: #999;
-      padding: 2px 0;
-    }
+  .cancel-btn {
+    background-color: #6c757d;
+    margin-left: 10px;
+  }
 
-    .comment-form input[type="file"]::file-selector-button {
-      background-color: #e9ecef;
-      color: #6c757d;
-      border: 1px solid #ced4da;
-      border-radius: 3px;
-      padding: 2px 8px;
-      font-size: 0.75em;
-      cursor: pointer;
-      margin-right: 6px;
-    }
-
-    .comment-form input[type="file"]::file-selector-button:hover {
-      background-color: #dee2e6;
-    }
-
-    .comment-form button {
-      background-color: #d63384;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85em;
-      transition: background-color 0.3s;
-    }
-
-    .comment-form button:hover {
-      background-color: #b02a6a;
-    }
-
-    .image-upload-label {
-      font-size: 0.75em;
-      color: #999;
-    }
-
-    .reply-form {
-      margin-top: 10px;
-      margin-left: 30px;
-      background-color: #fff;
-      border-left: 2px solid #d63384;
-      padding: 8px 10px;
-      border-radius: 4px;
-    }
-
-    .reply-form h5 {
-      font-size: 0.9em;
-      margin-bottom: 8px;
-      color: #666;
-      font-weight: 600;
-    }
-
-    .cancel-btn {
-      background-color: #6c757d;
-      margin-left: 10px;
-    }
-
-    .cancel-btn:hover {
-      background-color: #545b62;
-    }
+  .cancel-btn:hover {
+    background-color: #545b62;
+  }
 </style>
 
 <div id="comments-section">
-    <h3 class="text-center mb-4">💬 Comentarios</h3>
-    
-    <!-- Formulario principal para comentar -->
-    <div class="comment-form">
-        <form id="main-comment-form" enctype="multipart/form-data">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-            
-            <input type="hidden" id="main-author" name="author" value="usuario temp">
-            
-            <div class="form-group">
-                <label for="main-content">Comentario</label>
-                <textarea id="main-content" name="content" required></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="main-image" class="image-upload-label">📎 Imagen (opcional)</label>
-                <input type="file" id="main-image" name="image" accept="image/*">
-            </div>
-            
-            <button type="submit">Publicar comentario</button>
-        </form>
-    </div>
+  <h3 class="text-center mb-4">💬 Comentarios</h3>
 
-    <!-- Contenedor de comentarios -->
-    <div id="comments-container" class="text-start"></div>
+  <div class="comment-form">
+    <form id="main-comment-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      <textarea id="main-content" name="content" placeholder="Escribe tu comentario..." required></textarea>
+      <input type="file" id="main-image" name="image" accept="image/*">
+      <button type="submit">Publicar comentario</button>
+    </form>
+  </div>
+
+  <div id="comments-container"></div>
 </div>
 
 <script>
-    const postId = {{ post_id }};
+  const postId = {{ post.id }};
 
-    // Cargar los comentarios del post actual
-    function loadComments() {
-      fetch(`/blog/posts/${postId}/comments/`)
-        .then(res => res.json())
-        .then(comments => {
-          const container = document.getElementById("comments-container");
-          container.innerHTML = '';
-          if (comments.length === 0) {
-            container.innerHTML = "<p class='text-muted text-center'>Aún no hay comentarios. Sé el primero en opinar ✨</p>";
-          } else {
-            renderComments(comments, container, 0);
-          }
-        })
-        .catch(err => {
-          console.error("Error cargando comentarios:", err);
-          document.getElementById("comments-container").innerHTML =
-            "<p class='text-danger text-center'>No se pudieron cargar los comentarios 😞</p>";
-        });
-    }
-
-    // Función recursiva para renderizar los hilos de comentarios
-    function renderComments(comments, container, level) {
-      comments.forEach(comment => {
-        const div = document.createElement("div");
-        div.classList.add("comment");
-        div.style.marginLeft = `${level * 30}px`;
-        div.id = `comment-${comment.id}`;
-
-        div.innerHTML = `
-          <div class="meta">
-            <strong>${escapeHtml(comment.author)}</strong> — <em>${new Date(comment.published_date).toLocaleString()}</em>
-          </div>
-          <p>${escapeHtml(comment.content)}</p>
-          ${comment.image ? `<img src="${comment.image}" alt="imagen del comentario" style="max-width:150px;border-radius:8px;margin-top:5px;">` : ""}
-
-          <div class="comment-votes">
-            <button class="comment-vote-btn up" onclick="voteComment(${comment.id}, 'up')" title="Me gusta">▲</button>
-            <span class="comment-vote-count" id="comment-votes-${comment.id}">${comment.votes}</span>
-            <button class="comment-vote-btn down" onclick="voteComment(${comment.id}, 'down')" title="No me gusta">▼</button>
-            <button class="reply-btn" onclick="showReplyForm(${comment.id})">Responder</button>
-          </div>
-        `;
-
-        container.appendChild(div);
-
-        // Renderizar respuestas recursivamente
-        if (comment.replies && comment.replies.length > 0) {
-          renderComments(comment.replies, container, level + 1);
+  function loadComments() {
+    fetch(`/blog/posts/${postId}/comments/`)
+      .then(res => res.json())
+      .then(comments => {
+        const container = document.getElementById("comments-container");
+        container.innerHTML = "";
+        if (comments.length === 0) {
+          container.innerHTML = "<p class='text-muted text-center'>Aún no hay comentarios. Sé el primero en opinar ✨</p>";
+        } else {
+          renderComments(comments, container, 0);
         }
       });
-    }
+  }
 
-    // Función para mostrar el formulario de respuesta
-    function showReplyForm(commentId) {
-      // Cerrar cualquier formulario de respuesta abierto
-      const existingForms = document.querySelectorAll('.reply-form');
-      existingForms.forEach(form => form.remove());
+  function renderComments(comments, container, level) {
+    comments.forEach(comment => {
+      const div = document.createElement("div");
+      div.classList.add("comment");
+      div.style.marginLeft = `${level * 30}px`;
+      div.id = `comment-${comment.id}`;
 
-      const commentDiv = document.getElementById(`comment-${commentId}`);
-      
-      const replyFormDiv = document.createElement('div');
-      replyFormDiv.classList.add('reply-form');
-      replyFormDiv.innerHTML = `
-        <h5>Responder</h5>
-        <form class="reply-comment-form" data-parent-id="${commentId}" enctype="multipart/form-data">
-          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-          <input type="hidden" name="parent_id" value="${commentId}">
-          
-          <input type="hidden" name="author" value="usuario temp">
-          
-          <div class="form-group" style="margin-bottom: 6px;">
-            <label style="font-size: 0.75em; color: #999;">Respuesta</label>
-            <textarea name="content" required style="min-height: 45px; padding: 4px 6px; font-size: 0.8em;"></textarea>
-          </div>
-          
-          <div class="form-group" style="margin-bottom: 8px;">
-            <label style="font-size: 0.7em; color: #bbb;">📎 Imagen</label>
-            <input type="file" name="image" accept="image/*" style="font-size: 0.65em;">
-          </div>
-          
-          <button type="submit" style="padding: 4px 10px; font-size: 0.8em;">Publicar</button>
-          <button type="button" class="cancel-btn" onclick="this.closest('.reply-form').remove()" style="padding: 4px 10px; font-size: 0.8em;">Cancelar</button>
-        </form>
+      // Determinar color de botones según voto del usuario
+      const upClass = comment.user_vote === 1 ? "active" : "";
+      const downClass = comment.user_vote === -1 ? "active" : "";
+
+      div.innerHTML = `
+        <div class="meta">
+          <strong>${escapeHtml(comment.author)}</strong> — <em>${new Date(comment.published_date).toLocaleString()}</em>
+        </div>
+        <p>${escapeHtml(comment.content)}</p>
+        ${comment.image ? `<img src="${comment.image}" style="max-width:150px;border-radius:8px;margin-top:5px;">` : ""}
+        <div class="comment-votes">
+          <button class="comment-vote-btn up ${upClass}" onclick="voteComment(${comment.id}, 'up')">▲</button>
+          <span class="comment-vote-count" id="comment-votes-${comment.id}">${comment.votes}</span>
+          <button class="comment-vote-btn down ${downClass}" onclick="voteComment(${comment.id}, 'down')">▼</button>
+          <button class="reply-btn" onclick="showReplyForm(${comment.id})">Responder</button>
+        </div>
       `;
 
-      commentDiv.appendChild(replyFormDiv);
+      container.appendChild(div);
 
-      // Agregar event listener al formulario de respuesta
-      const replyForm = replyFormDiv.querySelector('form');
-      replyForm.addEventListener('submit', handleCommentSubmit);
-    }
+      if (comment.replies && comment.replies.length > 0) {
+        renderComments(comment.replies, container, level + 1);
+      }
+    });
+  }
 
-    // Función para manejar el envío de comentarios (principal y respuestas)
-    function handleCommentSubmit(e) {
-      e.preventDefault();
-      
-      const formData = new FormData(e.target);
-      
-      fetch(`/blog/posts/${postId}/comments/create/`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken')
-        }
-      })
-      .then(res => {
-        if (res.ok) {
-          // Limpiar formulario
-          e.target.reset();
-          
-          // Si es un formulario de respuesta, removerlo
-          const replyForm = e.target.closest('.reply-form');
-          if (replyForm) {
-            replyForm.remove();
-          }
-          
-          // Recargar comentarios
-          loadComments();
-        } else {
-          alert('Error al publicar el comentario. Por favor intenta de nuevo.');
-        }
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        alert('Error al publicar el comentario. Por favor intenta de nuevo.');
-      });
-    }
+  function showReplyForm(commentId) {
+    document.querySelectorAll(".reply-form").forEach(f => f.remove());
+    const commentDiv = document.getElementById(`comment-${commentId}`);
+    const replyFormDiv = document.createElement("div");
+    replyFormDiv.classList.add("reply-form");
+    replyFormDiv.innerHTML = `
+      <form class="reply-comment-form" data-parent-id="${commentId}" enctype="multipart/form-data">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+        <textarea name="content" placeholder="Tu respuesta..." required></textarea>
+        <input type="file" name="image" accept="image/*">
+        <button type="submit">Responder</button>
+        <button type="button" class="cancel-btn" onclick="this.closest('.reply-form').remove()">Cancelar</button>
+      </form>
+    `;
+    commentDiv.appendChild(replyFormDiv);
+    replyFormDiv.querySelector("form").addEventListener("submit", handleCommentSubmit);
+  }
 
-    // Event listener para el formulario principal
-    document.getElementById('main-comment-form').addEventListener('submit', handleCommentSubmit);
+  function handleCommentSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const parentId = e.target.dataset.parentId || null;
+    if (parentId) formData.append("parent_id", parentId);
 
-    // Función para votar comentarios
-    function voteComment(commentId, voteType) {
-      const endpoint = voteType === 'up'
-        ? `/blog/comments/${commentId}/upvote/`
-        : `/blog/comments/${commentId}/downvote/`;
+    fetch(`/blog/posts/${postId}/comments/create/`, {
+      method: "POST",
+      body: formData,
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    }).then(res => {
+      if (res.ok) {
+        e.target.reset();
+        e.target.closest(".reply-form")?.remove();
+        loadComments();
+      } else {
+        alert("Error al publicar el comentario.");
+      }
+    });
+  }
 
-      fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Content-Type': 'application/json'
-        }
-      })
+  document.getElementById("main-comment-form").addEventListener("submit", handleCommentSubmit);
+
+  function voteComment(commentId, voteType) {
+    const endpoint = voteType === "up" ? `/blog/comments/${commentId}/upvote/` : `/blog/comments/${commentId}/downvote/`;
+    fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "Content-Type": "application/json"
+      }
+    })
       .then(res => res.json())
       .then(data => {
         if (data.votes !== undefined) {
           document.getElementById(`comment-votes-${commentId}`).textContent = data.votes;
         }
-      })
-      .catch(err => {
-        console.error('Error al votar:', err);
-        alert('No se pudo registrar el voto. Intenta de nuevo.');
+        loadComments(); // refresca los colores según voto
       });
-    }
+  }
 
-    // Función auxiliar para obtener el token CSRF
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + "=")) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
         }
       }
-      return cookieValue;
     }
+    return cookieValue;
+  }
 
-    // Función para escapar HTML y prevenir XSS
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
 
-    // Cargar comentarios al inicio
-    loadComments();
+  loadComments();
 </script>
