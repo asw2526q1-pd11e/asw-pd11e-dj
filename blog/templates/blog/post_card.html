@@ -56,7 +56,13 @@
         </h2>
 
         <p style="color: #666; margin-top: 5px;">
-            Por <strong>{{ post.author }}</strong> —
+            Por
+            <strong>
+                <a href="{% url 'accounts:profile' post.author.username %}"
+                   style="color:#d63384; text-decoration:none;">
+                    {{ post.author.username }}
+                </a>
+            </strong> —
             <em>{{ post.published_date|date:"d M Y, H:i" }}</em>
         </p>
 
