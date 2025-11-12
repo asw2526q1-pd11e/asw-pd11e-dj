@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'django.contrib.sites',
+    "django.contrib.sites",
     "blog",
     "communities",
     "accounts",
@@ -35,9 +35,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-
     "allauth.socialaccount.providers.google",
-
 ]
 
 SITE_ID = 1
@@ -46,7 +44,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
 
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # Serveix fitxers estàtics en producció
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # Serve static files in production
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -57,9 +55,6 @@ MIDDLEWARE = [
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        # For each OAuth based provider, either add a ``SocialApp``
-        # (``socialaccount`` app) containing the required client
-        # credentials, or list them here:
         'APP': {
             'client_id': "392869001985-s2nnjrdrt2kv36hirrchk73t17gd84tu.apps.googleusercontent.com",
             'secret': "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",
@@ -86,10 +81,7 @@ TEMPLATES = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
-
-    # `allauth` specific authentication methods, such as login by email
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
@@ -105,9 +97,7 @@ DATABASES = {
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -119,11 +109,13 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+# Static files
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]  # fitxers estàtics del projecte
-STATIC_ROOT = BASE_DIR / "staticfiles"  # destinació de collectstatic
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
+# Media files (local fallback, but overridden by S3)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -133,3 +125,20 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SOCIALACCOUNT_LOGIN_ON_GET = True
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+
+# -------------------------------
+# AWS S3 Settings for Media Files
+# -------------------------------
+AWS_ACCESS_KEY_ID = "ASIAQ2FMKCBPUWS6UUCZ"
+AWS_SECRET_ACCESS_KEY = "Dy5xaoYZ7IgtMQuu690R2r208dNK2h704yXr5Ukn"
+AWS_SESSION_TOKEN = ("IQoJb3JpZ2luX2VjEHMaCXVzLXdlc3QtMiJGMEQCIFbRwiBeWEkhJHfbxk+UpAT90UtOTITTbO8dr0SYn7i8AiBFzMwZKQHawOvOMD8x7zv0U/"
+                     "sEiDuB2MDuba3rWywU2iq7Agg7EAAaDDA1NjE5NTk0NDU0MyIMmC/J5C+0lUY21pQvKpgCgYc8GQuNy+Mdqf6K5tgPu6Q4SpbQodTAp5GSl7KmQMLQviFTR377msGuOso5n/"
+                     "RNkgfmBpKccAa5Qx77uNXU7a4sXWevBNsKYpFXUNtgx0mnTdL7GoarcqkobLZfI3Uxu8zFy4wLsf6qWp3DjnJe2zZixXGgAJD6Jy283MECUbtEk9tK3pp5gkZhtsttxEJff+"
+                     "IfDpN5EruigjGGRh1FzGRC2oORqbgoKbC6feV/+pVVhPr2xcFpyqF2vMnGWYPHiK7gP+g4mrPa8qeKIlOoHcjuQDBqVAo59mal/G3qZoVCmqHXvrQfuTz2JdBeXuRgP1tcrfAl/"
+                     "yAXuiIo+cl5NTtPQJ0dIo+bIg9V4guFddEM399uwzqjhDCmn9PIBjqeAT3cr7BC4z4lzO+rQOXkBtEMbF9X0W1MVPMwHHDnSl64NBH0nG0dLiN3q1hvbGORMOufktiqUfqI/gngWeOAOMcduzgF801RM7Gt6ilyonxRDmezSuHBjpCk1IWtAGcy4Q9/zYDpOIPZPPhbDucp0hkMJkv/02o2zftRCWp9xj+PP4kJaJK5uhJ0JFY3icUqNvl3xQZIt2rSX93SGAy1")
+
+AWS_STORAGE_BUCKET_NAME = "asw-pd11e-dj"
+AWS_S3_REGION_NAME = "us-east-1"
+
+DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"
