@@ -30,11 +30,13 @@ class Migration(migrations.Migration):
                 ("bio", models.TextField(blank=True)),
                 (
                     "avatar",
-                    models.ImageField(blank=True, null=True, upload_to="avatars/"),
+                    models.ImageField(blank=True,
+                                      null=True, upload_to="avatars/"),
                 ),
                 (
                     "banner",
-                    models.ImageField(blank=True, null=True, upload_to="banners/"),
+                    models.ImageField(blank=True,
+                                      null=True, upload_to="banners/"),
                 ),
                 (
                     "user",
