@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from blog.models import Post, Comment
 from blog.forms import PostForm
+from django.contrib.auth.decorators import login_required
 
 
 def post_list(request):
@@ -11,6 +12,7 @@ def post_list(request):
     return render(request, "blog/post_list.html", {"posts": posts})
 
 
+@login_required
 def post_create(request):
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES)
