@@ -122,8 +122,13 @@
         </h1>
 
         <p class="post-detail-meta">
-            Publicado por <strong>{{ post.author }}</strong> el
-            <em>{{ post.published_date|date:"d 'de' F 'de' Y, H:i" }}</em>
+            Publicado por
+            <strong>
+                <a href="{% url 'accounts:profile' post.author.username %}" style="color:#d63384; text-decoration:none;">
+                    {{ post.author.username }}
+                </a>
+            </strong>
+
         </p>
 
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
