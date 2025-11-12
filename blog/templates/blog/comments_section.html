@@ -178,8 +178,14 @@
 
       div.innerHTML = `
         <div class="meta">
-          <strong>${escapeHtml(comment.author)}</strong> — <em>${new Date(comment.published_date).toLocaleString()}</em>
+            <strong>
+                <a href="/accounts/profile/${comment.author}" style="color:#d63384; text-decoration:none;">
+                ${escapeHtml(comment.author)}
+                </a>
+            </strong>
+            — <em>${new Date(comment.published_date).toLocaleString()}</em>
         </div>
+
         <p>${escapeHtml(comment.content)}</p>
         ${comment.image ? `<img src="${comment.image}" style="max-width:150px;border-radius:8px;margin-top:5px;">` : ""}
         <div class="comment-votes">
