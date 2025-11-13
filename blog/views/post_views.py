@@ -8,6 +8,7 @@ from blog.forms import PostForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
+
 @login_required
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
@@ -227,7 +228,7 @@ def comment_create(request, post_id):
     if referer:
         return redirect(referer)
     else:
-        return redirect("blog:post_detail", pk=post.id)    
+        return redirect("blog:post_detail", pk=post.id)
 
 
 def search_view(request):
