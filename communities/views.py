@@ -7,6 +7,19 @@ from django.db.models import Count
 
 
 @login_required
+def toggle_subscription(request, pk):
+    community = get_object_or_404(Community, pk=pk)
+    user = request.user
+
+    if user in community.subscribers.all():
+        community.subscribers.remove(user)  # unsubscribe
+    else:
+        community.subscribers.add(user)     # subscribe
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+@login_required
 def community_create(request):
     if request.method == "POST":
         form = CommunityForm(request.POST, request.FILES)
