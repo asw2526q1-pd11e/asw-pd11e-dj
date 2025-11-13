@@ -131,7 +131,9 @@ def get_comments_tree(post_id, user=None, order="top"):
     def build_tree(comment):
         user_vote = 0
         if user and user.is_authenticated:
-            vote_obj = VoteComment.objects.filter(user=user, comment=comment).first()
+            vote_obj = VoteComment.objects.filter(
+                user=user,
+                comment=comment).first()
             user_vote = vote_obj.vote if vote_obj else 0
         return {
             "id": comment.id,
@@ -153,11 +155,21 @@ def get_comments_tree(post_id, user=None, order="top"):
 
     # Define order for root comments
     if order == "top":
-        root_comments = Comment.objects.filter(post_id=post_id, parent__isnull=True).order_by("-votes", "-published_date")
+        root_comments = Comment.objects.filter(
+            post_id=post_id,
+            parent__isnull=True).order_by(
+                "-votes",
+                "-published_date")
     elif order == "old":
-        root_comments = Comment.objects.filter(post_id=post_id, parent__isnull=True).order_by("published_date")
+        root_comments = Comment.objects.filter(
+            post_id=post_id,
+            parent__isnull=True).order_by(
+                "published_date")
     else:  # "new"
-        root_comments = Comment.objects.filter(post_id=post_id, parent__isnull=True).order_by("-published_date")
+        root_comments = Comment.objects.filter(
+            post_id=post_id,
+            parent__isnull=True).order_by(
+                "-published_date")
 
     return [build_tree(c) for c in root_comments]
 
