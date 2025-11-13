@@ -7,6 +7,7 @@ from blog.models.votes import VotePost, VoteComment
 from blog.forms import PostForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from django.db.models import Q
 
 
 @login_required
@@ -229,3 +230,29 @@ def comment_create(request, post_id):
         return redirect(referer)
     else:
         return redirect("blog:post_detail", pk=post.id)
+    
+
+def search_view(request):
+    query = request.GET.get("q", "")
+    search_type = request.GET.get("type", "both")  # posts, comments, both
+    results = []
+    posts_results = []
+    comments_results = []
+
+    if query:
+        if search_type == "posts":
+            results = Post.objects.filter(title__icontains=query)
+        elif search_type == "comments":
+            results = Comment.objects.filter(content__icontains=query)
+        elif search_type == "both":
+            posts_results = Post.objects.filter(title__icontains=query)
+            comments_results = Comment.objects.filter(content__icontains=query)
+
+    context = {
+        "results": results,
+        "query": query,
+        "search_type": search_type,
+        "posts_results": posts_results,
+        "comments_results": comments_results,
+    }
+    return render(request, "blog/search_results.html", context)
