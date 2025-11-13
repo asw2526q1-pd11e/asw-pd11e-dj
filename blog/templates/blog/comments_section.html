@@ -399,6 +399,9 @@
       const upClass = comment.user_vote === 1 ? "active" : "";
       const downClass = comment.user_vote === -1 ? "active" : "";
 
+      const savedClass = comment.saved ? "saved" : "";
+      const star = comment.saved ? "★" : "☆";
+
       div.innerHTML = `
         <div class="meta">
           <strong>
@@ -421,6 +424,11 @@
             <button class="delete-btn" onclick="deleteComment(${comment.id})" title="Eliminar comentari">🗑️</button>
           ` : ""}
         </div>
+        <div class="comment-save" style="margin-top:5px;">
+          <button class="comment-save-btn ${savedClass}" onclick="toggleSavedComment(${comment.id}, this)">
+            ${star}
+          </button>
+        </div>
       `;
 
       container.appendChild(div);
@@ -429,6 +437,19 @@
         renderComments(comment.replies, container, level + 1);
       }
     });
+  }
+
+  function toggleSavedComment(commentId, btn) {
+    fetch(`/accounts/toggle-saved-comment/${commentId}/`, {
+      method: "POST",
+      headers: { "X-CSRFToken": getCookie('csrftoken') }
+    })
+            .then(res => res.json())
+            .then(data => {
+              btn.textContent = data.saved ? '★' : '☆';
+              btn.classList.toggle('saved', data.saved);
+            })
+            .catch(() => alert("Error al guardar el comentario."));
   }
 
   function deleteComment(commentId) {
@@ -471,7 +492,6 @@
   }
 
   function showEditForm(commentId) {
-    // Eliminar cualquier otro formulario de edición abierto
     document.querySelectorAll(".reply-form, .edit-form").forEach(f => f.remove());
 
     const commentDiv = document.getElementById(`comment-${commentId}`);
@@ -499,7 +519,6 @@
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          // Actualizamos el contenido en el DOM
           commentDiv.querySelector("p").innerText = data.new_content;
           editFormDiv.remove();
         } else {
