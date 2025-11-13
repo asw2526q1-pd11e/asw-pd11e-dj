@@ -10,10 +10,11 @@
       <h1 class="fw-bold mb-2 gradient-text">Llista de Comunitats</h1>
       <!-- Botons de filtre -->
       <div class="filter-toggle-group mt-3">
-        <button class="filter-btn active" data-mode="tot">Tot</button>
-        <button class="filter-btn" data-mode="subscrit">Subscrit</button>
-        <button class="filter-btn" data-mode="local">Local</button>
+        <a href="?mode=tot" class="filter-btn {% if filter_mode == 'tot' %}active{% endif %}">Tot</a>
+        <a href="?mode=subscrit" class="filter-btn {% if filter_mode == 'subscrit' %}active{% endif %}">Subscrit</a>
+        <a href="?mode=local" class="filter-btn {% if filter_mode == 'local' %}active{% endif %}">Local</a>
       </div>
+
     </div>
 
     <!-- Botó crear comunitat -->

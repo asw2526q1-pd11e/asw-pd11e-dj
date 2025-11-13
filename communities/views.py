@@ -31,12 +31,20 @@ def community_create(request):
     return render(request, "communities/community_form.html", {"form": form})
 
 
+@login_required
 def community_list(request):
-    # Annotate each community with post and comment counts
+    user = request.user
+    filter_mode = request.GET.get('mode', 'tot')  # default = 'tot'
+
     communities = Community.objects.annotate(
         real_posts=Count('posts', distinct=True),
         real_comments=Count('posts__comments', distinct=True)
     )
+
+    if filter_mode == 'subscrit':
+        communities = [c for c in communities if user in c.subscribers.all()]
+    elif filter_mode == 'local':
+        communities = [c for c in communities if user not in c.subscribers.all()]
 
     community_data = []
     for c in communities:
@@ -45,12 +53,16 @@ def community_list(request):
             "subs": c.subscribers.count(),
             "posts": c.real_posts,  # type: ignore
             "comments": c.real_comments,  # type: ignore
+            "is_subscribed": user in c.subscribers.all()
         })
 
     return render(
         request,
         "communities/community_list.html",
-        {"community_data": community_data}
+        {
+            "community_data": community_data,
+            "filter_mode": filter_mode
+        }
     )
 
 
