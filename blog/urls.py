@@ -54,6 +54,11 @@ urlpatterns = [
         post_views.comment_delete,
         name="comment_delete",
     ),  # /comments/1/delete/
+    path(
+        "comments/<int:comment_id>/edit/",
+        post_views.comment_edit,
+        name="comment_edit",
+    ),  # /comments/1/edit/
     path("posts/<int:pk>/edit/",
          post_views.post_edit,
          name="post_edit"),
