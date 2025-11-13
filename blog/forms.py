@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 from .models import Post
 
 
@@ -8,7 +9,6 @@ class PostForm(forms.ModelForm):
         fields = [
             "title",
             "content",
-            "author",
             "published_date",
             "communities",
             "image",
@@ -19,6 +19,13 @@ class PostForm(forms.ModelForm):
             "communities": "Comunidades",
         }
         widgets = {
+            "published_date": forms.DateTimeInput(
+                attrs={
+                    "class": "form-control",
+                    "readonly": "readonly",
+                },
+                format="%Y-%m-%d %H:%M:%S",
+            ),
             "communities": forms.SelectMultiple(
                 attrs={
                     "class": "form-control community-select",
@@ -26,3 +33,17 @@ class PostForm(forms.ModelForm):
                 }
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.published_date:
+            self.fields["published_date"].initial = (
+                self.instance.published_date
+            )
+        else:
+            self.fields["published_date"].initial = timezone.now()
+
+    def clean_published_date(self):
+        if self.instance and self.instance.published_date:
+            return self.instance.published_date
+        return timezone.now()

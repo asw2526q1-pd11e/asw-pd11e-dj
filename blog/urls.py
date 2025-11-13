@@ -49,4 +49,19 @@ urlpatterns = [
         post_views.comment_downvote,
         name="comment_downvote",
     ),  # /comments/1/downvote/
+    path(
+        "comments/<int:comment_id>/delete/",
+        post_views.comment_delete,
+        name="comment_delete",
+    ),  # /comments/1/delete/
+    path(
+        "comments/<int:comment_id>/edit/",
+        post_views.comment_edit,
+        name="comment_edit",
+    ),  # /comments/1/edit/
+    path("posts/<int:pk>/edit/",
+         post_views.post_edit,
+         name="post_edit"),
+    path("search/", post_views.search_view, name="search"),
+    path("posts/<int:pk>/delete/", post_views.post_delete, name="post_delete"),
 ]

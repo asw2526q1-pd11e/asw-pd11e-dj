@@ -1,400 +1,591 @@
 <style>
-    #comments-section {
-      margin-top: 60px;
-      border-top: 2px solid #eee;
-      padding-top: 30px;
-    }
+  /* === COMMENTS STYLES === */
+  #comments-section {
+    margin-top: 60px;
+    border-top: 1px solid #e8e8e8;
+    padding-top: 40px;
+  }
 
-    .comment {
-      background-color: #fafafa;
-      border-radius: 12px;
-      padding: 15px 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
+  #comments-section h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 30px;
+    letter-spacing: -0.5px;
+  }
 
-    .comment strong {
-      color: #d63384;
-    }
+  .filter-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
 
-    .comment .meta {
-      font-size: 0.9em;
-      color: #777;
-      margin-bottom: 5px;
-    }
+  .filter-btn {
+    border: none;
+    background: #f5f5f5;
+    color: #666;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+  }
 
-    .comment-votes {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-    }
+  .filter-btn:hover {
+    background: #e8e8e8;
+    color: #333;
+    transform: translateY(-1px);
+  }
 
-    .comment-vote-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.2em;
-      padding: 0;
-      transition: transform 0.2s;
-    }
+  .filter-btn.active {
+    background: linear-gradient(135deg, #d63384 0%, #b02a6a 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(214, 51, 132, 0.25);
+  }
 
-    .comment-vote-btn:hover {
-      transform: scale(1.2);
-    }
+  .comment {
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+  }
 
-    .comment-vote-btn.up {
-      color: #28a745;
-    }
+  .comment:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #d8d8d8;
+  }
 
-    .comment-vote-btn.down {
-      color: #dc3545;
-    }
+  .comment strong {
+    color: #d63384;
+    font-weight: 600;
+  }
 
-    .comment-vote-count {
-      font-weight: bold;
-      font-size: 0.95em;
-      color: #555;
-      min-width: 30px;
-      text-align: center;
-    }
+  .comment .meta {
+    font-size: 0.9em;
+    color: #888;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-    .reply-btn {
-      background: none;
-      border: none;
-      color: #007bff;
-      cursor: pointer;
-      font-size: 0.9em;
-      padding: 0;
-      margin-left: 15px;
-      text-decoration: underline;
-    }
+  .comment .meta em {
+    color: #aaa;
+    font-size: 0.9em;
+  }
 
-    .reply-btn:hover {
-      color: #0056b3;
-    }
+  .comment p {
+    color: #333;
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+  }
 
-    .comment-form {
-      background-color: #f8f9fa;
-      border-radius: 6px;
-      padding: 10px 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-      width: 100%;
-      max-width: 1300px;  
-    }
+  .comment img {
+    max-width: 150px;
+    border-radius: 10px;
+    margin-top: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 
-    .comment-form h4 {
-      margin-bottom: 8px;
-      color: #333;
-      font-size: 0.95em;
-      font-weight: 600;
-    }
+  .comment-votes {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    background: #f8f8f8;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
 
-    .comment-form .form-group {
-      margin-bottom: 8px;
-    }
+  .comment-vote-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 4px 6px;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+  }
 
-    .comment-form label {
-      display: block;
-      margin-bottom: 3px;
-      font-weight: 500;
-      color: #666;
-      font-size: 0.8em;
-    }
+  .comment-vote-btn:hover {
+    transform: scale(1.15);
+    background: rgba(0, 0, 0, 0.05);
+  }
 
-    .comment-form input[type="text"],
-    .comment-form textarea {
-      width: 100%;
-      padding: 6px 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 0.85em;
-      font-family: inherit;
-    }
+  .comment-vote-btn.up.active {
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+  }
 
-    .comment-form textarea {
-      min-height: 50px;
-      resize: vertical;
-    }
+  .comment-vote-btn.down.active {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
 
-    .comment-form input[type="file"] {
-      font-size: 0.7em;
-      color: #999;
-      padding: 2px 0;
-    }
+  .comment-vote-btn.up,
+  .comment-vote-btn.down {
+    color: #bbb;
+  }
 
-    .comment-form input[type="file"]::file-selector-button {
-      background-color: #e9ecef;
-      color: #6c757d;
-      border: 1px solid #ced4da;
-      border-radius: 3px;
-      padding: 2px 8px;
-      font-size: 0.75em;
-      cursor: pointer;
-      margin-right: 6px;
-    }
+  .comment-vote-count {
+    font-weight: 700;
+    font-size: 0.95em;
+    color: #444;
+    min-width: 32px;
+    text-align: center;
+  }
 
-    .comment-form input[type="file"]::file-selector-button:hover {
-      background-color: #dee2e6;
-    }
+  .reply-btn {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    padding: 6px 12px;
+    margin-left: 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
 
-    .comment-form button {
-      background-color: #d63384;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85em;
-      transition: background-color 0.3s;
-    }
+  .reply-btn:hover {
+    color: #d63384;
+    background: rgba(214, 51, 132, 0.08);
+  }
 
-    .comment-form button:hover {
-      background-color: #b02a6a;
-    }
+  .delete-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+  }
 
-    .image-upload-label {
-      font-size: 0.75em;
-      color: #999;
-    }
+  .delete-btn:hover {
+    color: #dc3545;
+    transform: scale(1.15);
+  }
 
-    .reply-form {
-      margin-top: 10px;
-      margin-left: 30px;
-      background-color: #fff;
-      border-left: 2px solid #d63384;
-      padding: 8px 10px;
-      border-radius: 4px;
-    }
+  .edit-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+  }
 
-    .reply-form h5 {
-      font-size: 0.9em;
-      margin-bottom: 8px;
-      color: #666;
-      font-weight: 600;
-    }
+  .edit-btn:hover {
+    color: #28a745;
+    transform: scale(1.15);
+  }
 
-    .cancel-btn {
-      background-color: #6c757d;
-      margin-left: 10px;
-    }
+  .comment-form {
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    width: 100%;
+    max-width: 1300px;
+  }
 
-    .cancel-btn:hover {
-      background-color: #545b62;
-    }
+  .comment-form textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95em;
+    font-family: inherit;
+    min-height: 90px;
+    resize: vertical;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+  }
+
+  .comment-form textarea:focus {
+    outline: none;
+    border-color: #d63384;
+    box-shadow: 0 0 0 3px rgba(214, 51, 132, 0.1);
+  }
+
+  .comment-form input[type="file"] {
+    margin: 12px 0;
+    font-size: 0.9em;
+    color: #666;
+  }
+
+  .comment-form button {
+    background: linear-gradient(135deg, #d63384 0%, #b02a6a 100%);
+    color: white;
+    border: none;
+    padding: 11px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(214, 51, 132, 0.2);
+  }
+
+  .comment-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(214, 51, 132, 0.3);
+  }
+
+  .comment-form button:active {
+    transform: translateY(0);
+  }
+
+  .reply-form {
+    margin-top: 16px;
+    margin-left: 30px;
+    background: #fafafa;
+    border-left: 3px solid #d63384;
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .reply-form textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-family: inherit;
+    min-height: 70px;
+    resize: vertical;
+    transition: all 0.2s ease;
+  }
+
+  .reply-form textarea:focus {
+    outline: none;
+    border-color: #d63384;
+    box-shadow: 0 0 0 3px rgba(214, 51, 132, 0.1);
+  }
+
+  .reply-form input[type="file"] {
+    margin: 10px 0;
+    font-size: 0.85em;
+  }
+
+  .reply-form button {
+    background: linear-gradient(135deg, #d63384 0%, #b02a6a 100%);
+    color: white;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .reply-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(214, 51, 132, 0.25);
+  }
+
+  .cancel-btn {
+    background: #6c757d !important;
+    margin-left: 10px;
+  }
+
+  .cancel-btn:hover {
+    background: #545b62 !important;
+    box-shadow: 0 3px 8px rgba(108, 117, 125, 0.25) !important;
+  }
+
+  #comments-container > p.text-muted {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px 20px;
+    font-size: 1.05rem;
+  }
+
+  .comment-save-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #ccc;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.3s;
+  }
+
+  .comment-save-btn:hover {
+    color: #ffb300;
+  }
+
+  .comment-save-btn.saved {
+    color: #ffc107;
+  }
 </style>
 
 <div id="comments-section">
-    <h3 class="text-center mb-4">💬 Comentarios</h3>
-    
-    <!-- Formulario principal para comentar -->
-    <div class="comment-form">
-        <form id="main-comment-form" enctype="multipart/form-data">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-            
-            <input type="hidden" id="main-author" name="author" value="usuario temp">
-            
-            <div class="form-group">
-                <label for="main-content">Comentario</label>
-                <textarea id="main-content" name="content" required></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="main-image" class="image-upload-label">📎 Imagen (opcional)</label>
-                <input type="file" id="main-image" name="image" accept="image/*">
-            </div>
-            
-            <button type="submit">Publicar comentario</button>
-        </form>
-    </div>
+  <h3 class="text-center mb-4">💬 Comentaris</h3>
 
-    <!-- Contenedor de comentarios -->
-    <div id="comments-container" class="text-start"></div>
+  <!-- 🔹 Filtres -->
+  <div class="filter-bar">
+    <button class="filter-btn active" data-order="top">Top</button>
+    <button class="filter-btn" data-order="new">Nou</button>
+    <button class="filter-btn" data-order="old">Antic</button>
+  </div>
+
+  <!-- Formulari -->
+  <div class="comment-form">
+    <form id="main-comment-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      <textarea id="main-content" name="content" placeholder="Escriu el teu comentari..." required></textarea>
+      <input type="file" id="main-image" name="image" accept="image/*">
+      <button type="submit">Publicar comentari</button>
+    </form>
+  </div>
+
+  <div id="comments-container"></div>
 </div>
 
 <script>
-    const postId = {{ post_id }};
+  const postId = {{ post.id }};
+  const currentUser = "{{ request.user.username }}";
+  let currentOrder = "top";
 
-    // Cargar los comentarios del post actual
-    function loadComments() {
-      fetch(`/blog/posts/${postId}/comments/`)
-        .then(res => res.json())
-        .then(comments => {
-          const container = document.getElementById("comments-container");
-          container.innerHTML = '';
-          if (comments.length === 0) {
-            container.innerHTML = "<p class='text-muted text-center'>Aún no hay comentarios. Sé el primero en opinar ✨</p>";
-          } else {
-            renderComments(comments, container, 0);
-          }
-        })
-        .catch(err => {
-          console.error("Error cargando comentarios:", err);
-          document.getElementById("comments-container").innerHTML =
-            "<p class='text-danger text-center'>No se pudieron cargar los comentarios 😞</p>";
-        });
-    }
-
-    // Función recursiva para renderizar los hilos de comentarios
-    function renderComments(comments, container, level) {
-      comments.forEach(comment => {
-        const div = document.createElement("div");
-        div.classList.add("comment");
-        div.style.marginLeft = `${level * 30}px`;
-        div.id = `comment-${comment.id}`;
-
-        div.innerHTML = `
-          <div class="meta">
-            <strong>${escapeHtml(comment.author)}</strong> — <em>${new Date(comment.published_date).toLocaleString()}</em>
-          </div>
-          <p>${escapeHtml(comment.content)}</p>
-          ${comment.image ? `<img src="${comment.image}" alt="imagen del comentario" style="max-width:150px;border-radius:8px;margin-top:5px;">` : ""}
-
-          <div class="comment-votes">
-            <button class="comment-vote-btn up" onclick="voteComment(${comment.id}, 'up')" title="Me gusta">▲</button>
-            <span class="comment-vote-count" id="comment-votes-${comment.id}">${comment.votes}</span>
-            <button class="comment-vote-btn down" onclick="voteComment(${comment.id}, 'down')" title="No me gusta">▼</button>
-            <button class="reply-btn" onclick="showReplyForm(${comment.id})">Responder</button>
-          </div>
-        `;
-
-        container.appendChild(div);
-
-        // Renderizar respuestas recursivamente
-        if (comment.replies && comment.replies.length > 0) {
-          renderComments(comment.replies, container, level + 1);
-        }
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      document.cookie.split(';').forEach(cookie => {
+        const c = cookie.trim();
+        if (c.startsWith(name + '=')) cookieValue = decodeURIComponent(c.substring(name.length + 1));
       });
     }
+    return cookieValue;
+  }
 
-    // Función para mostrar el formulario de respuesta
-    function showReplyForm(commentId) {
-      // Cerrar cualquier formulario de respuesta abierto
-      const existingForms = document.querySelectorAll('.reply-form');
-      existingForms.forEach(form => form.remove());
+  function loadComments() {
+    fetch(`/blog/posts/${postId}/comments/?order=${currentOrder}`)
+      .then(res => res.json())
+      .then(comments => {
+        const container = document.getElementById("comments-container");
+        container.innerHTML = "";
+        if (comments.length === 0) {
+          container.innerHTML = "<p class='text-muted text-center'>Encara no hi ha comentaris. Sigues el primer ✨</p>";
+        } else {
+          renderComments(comments, container, 0);
+        }
+      });
+  }
 
-      const commentDiv = document.getElementById(`comment-${commentId}`);
-      
-      const replyFormDiv = document.createElement('div');
-      replyFormDiv.classList.add('reply-form');
-      replyFormDiv.innerHTML = `
-        <h5>Responder</h5>
-        <form class="reply-comment-form" data-parent-id="${commentId}" enctype="multipart/form-data">
-          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-          <input type="hidden" name="parent_id" value="${commentId}">
-          
-          <input type="hidden" name="author" value="usuario temp">
-          
-          <div class="form-group" style="margin-bottom: 6px;">
-            <label style="font-size: 0.75em; color: #999;">Respuesta</label>
-            <textarea name="content" required style="min-height: 45px; padding: 4px 6px; font-size: 0.8em;"></textarea>
-          </div>
-          
-          <div class="form-group" style="margin-bottom: 8px;">
-            <label style="font-size: 0.7em; color: #bbb;">📎 Imagen</label>
-            <input type="file" name="image" accept="image/*" style="font-size: 0.65em;">
-          </div>
-          
-          <button type="submit" style="padding: 4px 10px; font-size: 0.8em;">Publicar</button>
-          <button type="button" class="cancel-btn" onclick="this.closest('.reply-form').remove()" style="padding: 4px 10px; font-size: 0.8em;">Cancelar</button>
-        </form>
+  function renderComments(comments, container, level) {
+    comments.forEach(comment => {
+      const div = document.createElement("div");
+      div.classList.add("comment");
+      div.style.marginLeft = `${level * 30}px`;
+      div.id = `comment-${comment.id}`;
+
+      const upClass = comment.user_vote === 1 ? "active" : "";
+      const downClass = comment.user_vote === -1 ? "active" : "";
+
+      const savedClass = comment.saved ? "saved" : "";
+      const star = comment.saved ? "★" : "☆";
+
+      div.innerHTML = `
+        <div class="meta">
+          <strong>
+            <a href="/accounts/profile/${comment.author}" style="color:#d63384;text-decoration:none;">
+              ${escapeHtml(comment.author)}
+            </a>
+          </strong>
+          <span style="color:#ddd;">•</span>
+          <em>${new Date(comment.published_date).toLocaleString()}</em>
+        </div>
+        <p>${escapeHtml(comment.content)}</p>
+        ${comment.image ? `<img src="${comment.image}" style="max-width:150px;border-radius:8px;margin-top:5px;">` : ""}
+        <div class="comment-votes">
+          <button class="comment-vote-btn up ${upClass}" onclick="voteComment(${comment.id}, 'up')">▲</button>
+          <span class="comment-vote-count" id="comment-votes-${comment.id}">${comment.votes}</span>
+          <button class="comment-vote-btn down ${downClass}" onclick="voteComment(${comment.id}, 'down')">▼</button>
+          <button class="reply-btn" onclick="showReplyForm(${comment.id})">Respondre</button>
+          ${comment.author === currentUser ? `
+            <button class="edit-btn" onclick="showEditForm(${comment.id})" title="Editar comentari">✏️</button>
+            <button class="delete-btn" onclick="deleteComment(${comment.id})" title="Eliminar comentari">🗑️</button>
+          ` : ""}
+        </div>
+        <div class="comment-save" style="margin-top:5px;">
+          <button class="comment-save-btn ${savedClass}" onclick="toggleSavedComment(${comment.id}, this)">
+            ${star}
+          </button>
+        </div>
       `;
 
-      commentDiv.appendChild(replyFormDiv);
+      container.appendChild(div);
 
-      // Agregar event listener al formulario de respuesta
-      const replyForm = replyFormDiv.querySelector('form');
-      replyForm.addEventListener('submit', handleCommentSubmit);
-    }
+      if (comment.replies && comment.replies.length > 0) {
+        renderComments(comment.replies, container, level + 1);
+      }
+    });
+  }
 
-    // Función para manejar el envío de comentarios (principal y respuestas)
-    function handleCommentSubmit(e) {
+  function toggleSavedComment(commentId, btn) {
+    fetch(`/accounts/toggle-saved-comment/${commentId}/`, {
+      method: "POST",
+      headers: { "X-CSRFToken": getCookie('csrftoken') }
+    })
+            .then(res => res.json())
+            .then(data => {
+              btn.textContent = data.saved ? '★' : '☆';
+              btn.classList.toggle('saved', data.saved);
+            })
+            .catch(() => alert("Error al guardar el comentario."));
+  }
+
+  function deleteComment(commentId) {
+    if (!confirm("Estàs segur que vols esborrar aquest comentari i totes les respostes?")) return;
+
+    fetch(`/blog/comments/${commentId}/delete/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById(`comment-${commentId}`)?.remove();
+      } else {
+        alert("No s'ha pogut esborrar el comentari.");
+      }
+    })
+    .catch(() => alert("Error en esborrar el comentari."));
+  }
+
+  function showReplyForm(commentId) {
+    document.querySelectorAll(".reply-form").forEach(f => f.remove());
+    const commentDiv = document.getElementById(`comment-${commentId}`);
+    const replyFormDiv = document.createElement("div");
+    replyFormDiv.classList.add("reply-form");
+    replyFormDiv.innerHTML = `
+      <form class="reply-comment-form" data-parent-id="${commentId}" enctype="multipart/form-data">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+        <textarea name="content" placeholder="La teva resposta..." required></textarea>
+        <input type="file" name="image" accept="image/*">
+        <button type="submit">Respondre</button>
+        <button type="button" class="cancel-btn" onclick="this.closest('.reply-form').remove()">Cancel·lar</button>
+      </form>
+    `;
+    commentDiv.appendChild(replyFormDiv);
+    replyFormDiv.querySelector("form").addEventListener("submit", handleCommentSubmit);
+  }
+
+  function showEditForm(commentId) {
+    document.querySelectorAll(".reply-form, .edit-form").forEach(f => f.remove());
+
+    const commentDiv = document.getElementById(`comment-${commentId}`);
+    const currentContent = commentDiv.querySelector("p").innerText;
+
+    const editFormDiv = document.createElement("div");
+    editFormDiv.classList.add("edit-form");
+    editFormDiv.innerHTML = `
+      <form class="edit-comment-form" data-comment-id="${commentId}">
+        <textarea name="content" required>${currentContent}</textarea>
+        <button type="submit">Guardar</button>
+        <button type="button" class="cancel-btn" onclick="this.closest('.edit-form').remove()">Cancel·lar</button>
+      </form>
+    `;
+    commentDiv.appendChild(editFormDiv);
+
+    editFormDiv.querySelector("form").addEventListener("submit", function(e) {
       e.preventDefault();
-      
       const formData = new FormData(e.target);
-      
-      fetch(`/blog/posts/${postId}/comments/create/`, {
-        method: 'POST',
+      fetch(`/blog/comments/${commentId}/edit/`, {
+        method: "POST",
         body: formData,
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken')
-        }
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
       })
-      .then(res => {
-        if (res.ok) {
-          // Limpiar formulario
-          e.target.reset();
-          
-          // Si es un formulario de respuesta, removerlo
-          const replyForm = e.target.closest('.reply-form');
-          if (replyForm) {
-            replyForm.remove();
-          }
-          
-          // Recargar comentarios
-          loadComments();
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          commentDiv.querySelector("p").innerText = data.new_content;
+          editFormDiv.remove();
         } else {
-          alert('Error al publicar el comentario. Por favor intenta de nuevo.');
+          alert(data.error || "Error al actualizar el comentari.");
         }
-      })
-      .catch(err => {
-        console.error('Error:', err);
-        alert('Error al publicar el comentario. Por favor intenta de nuevo.');
       });
-    }
+    });
+  }
 
-    // Event listener para el formulario principal
-    document.getElementById('main-comment-form').addEventListener('submit', handleCommentSubmit);
+  function handleCommentSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const parentId = e.target.dataset.parentId || null;
+    if (parentId) formData.append("parent_id", parentId);
 
-    // Función para votar comentarios
-    function voteComment(commentId, voteType) {
-      const endpoint = voteType === 'up'
-        ? `/blog/comments/${commentId}/upvote/`
-        : `/blog/comments/${commentId}/downvote/`;
+    fetch(`/blog/posts/${postId}/comments/create/`, {
+      method: "POST",
+      body: formData,
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    }).then(res => {
+      if (res.ok) {
+        e.target.reset();
+        e.target.closest(".reply-form")?.remove();
+        loadComments();
+      } else {
+        alert("Error al publicar el comentari.");
+      }
+    });
+  }
 
-      fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Content-Type': 'application/json'
-        }
-      })
+  function voteComment(commentId, voteType) {
+    const endpoint = voteType === "up"
+            ? `/blog/comments/${commentId}/upvote/`
+            : `/blog/comments/${commentId}/downvote/`;
+
+    fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "Content-Type": "application/json"
+      }
+    })
       .then(res => res.json())
       .then(data => {
         if (data.votes !== undefined) {
           document.getElementById(`comment-votes-${commentId}`).textContent = data.votes;
         }
-      })
-      .catch(err => {
-        console.error('Error al votar:', err);
-        alert('No se pudo registrar el voto. Intenta de nuevo.');
+        loadComments();
       });
-    }
+  }
 
-    // Función auxiliar para obtener el token CSRF
-    function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
-        }
-      }
-      return cookieValue;
-    }
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentOrder = btn.dataset.order;
+      loadComments();
+    });
+  });
 
-    // Función para escapar HTML y prevenir XSS
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
+  function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
 
-    // Cargar comentarios al inicio
-    loadComments();
+  document.getElementById("main-comment-form").addEventListener("submit", handleCommentSubmit);
+
+  loadComments();
 </script>

@@ -1,10 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Configuració{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Configuració del perfil</h2>
+
+<form method="post" enctype="multipart/form-data" id="profileForm">
+    {% csrf_token %}
+
+    <div class="mb-3">
+        {{ form.nombre.label_tag }}
+        {{ form.nombre }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.bio.label_tag }}
+        {{ form.bio }}
+    </div>
+
+    <!-- Avatar -->
+    <div class="mb-4">
+        <label class="form-label fw-bold">Avatar</label>
+        <div class="position-relative mb-2" style="width: 140px; height: 140px;">
+            <img id="avatarPreview"
+                 class="rounded-circle border border-3 border-white"
+                 style="width: 140px; height: 140px; object-fit: cover; {% if not profile.avatar %}display:none{% endif %}"
+                 src="{% if profile.avatar %}{{ profile.avatar.url }}{% endif %}">
+            <button type="button"
+                    id="avatarRemoveBtn"
+                    class="btn-close position-absolute"
+                    style="top: -5px; right: -5px; z-index: 10; {% if not profile.avatar %}display:none{% endif %}"
+                    aria-label="Eliminar avatar"></button>
+        </div>
+
+        <input type="file" name="avatar" id="id_avatar" accept="image/*" class="form-control" style="max-width: 100%;">
+
+        <input type="hidden" name="delete_avatar" id="deleteAvatarInput" value="false">
+    </div>
+
+    <!-- Banner -->
+    <div class="mb-4">
+        <label class="form-label fw-bold">Banner</label>
+        <div class="image-preview-container position-relative" id="bannerContainer">
+            {% if profile.banner %}
+            <img src="{{ profile.banner.url }}"
+                 alt="Banner"
+                 id="bannerPreview"
+                 class="banner-preview rounded"
+                 style="width: 100%; height: 170px; object-fit: cover; border-radius: 10px;">
+            <button type="button"
+                    class="remove-image btn-close position-absolute"
+                    style="top: 5px; right: 5px; z-index: 10;"
+                    id="bannerRemoveBtn"
+                    aria-label="Eliminar banner"></button>
+            {% else %}
+            <img id="bannerPreview"
+                 class="banner-preview rounded"
+                 style="display:none; width: 100%; height: 170px; object-fit: cover; border-radius: 10px;">
+            <button type="button"
+                    class="remove-image btn-close position-absolute"
+                    style="display:none; top: 5px; right: 5px; z-index: 10;"
+                    id="bannerRemoveBtn"
+                    aria-label="Eliminar banner"></button>
+            {% endif %}
+        </div>
+        <div class="mt-2">
+            <input type="file" name="banner" id="id_banner" accept="image/*" class="form-control">
+        </div>
+        <input type="hidden" name="delete_banner" id="deleteBannerInput" value="false">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</form>
+
+<script src="{% static 'js/profile_preview.js' %}"></script>
+{% endblock %}

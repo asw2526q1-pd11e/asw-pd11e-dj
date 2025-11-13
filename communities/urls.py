@@ -5,4 +5,7 @@ urlpatterns = [
     path("", views.community_list, name="community_list"),
     path("create/", views.community_create, name="community_create"),
     path("<int:pk>/", views.community_site, name="community_site"),
+    path('toggle-subscription/<int:pk>/',
+         views.toggle_subscription,
+         name='toggle_subscription'),
 ]

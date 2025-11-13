@@ -5,17 +5,93 @@
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Lista de Posts</h1>
 
-{% if posts %}
+<!-- Ordenar-->
+<div class="filter-bar mb-4">
+  <a href="?order=nou" class="filter-btn {% if request.GET.order == 'nou' or not request.GET.order %}active{% endif %}">Nou</a>
+  <a href="?order=antic" class="filter-btn {% if request.GET.order == 'antic' %}active{% endif %}">Antic</a>
+  <a href="?order=mes_comentaris" class="filter-btn {% if request.GET.order == 'mes_comentaris' %}active{% endif %}">Mes comentaris</a>
+  <a href="?order=mes_vots" class="filter-btn {% if request.GET.order == 'mes_vots' %}active{% endif %}">Mes vots</a>
+</div>
+
+{% if posts_data %}
 <div class="posts-list">
-    {% for post in posts %}
-    {% include "blog/post_card.html" with post=post %}
+    {% for item in posts_data %}
+        {% include "blog/post_card.html" with post=item.post user_vote=item.user_vote %}
     {% endfor %}
 </div>
 {% else %}
 <p>No hay posts disponibles.</p>
 {% endif %}
 
-<p>
+<p class="mt-4">
     <a href="{% url 'blog:post_create' %}" class="btn btn-primary">Crear un nuevo Post</a>
 </p>
+
+<style>
+/* Mateix estil que els dels comentaris*/
+.filter-bar {
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.filter-btn {
+    border: none;
+    background: #f5f5f5;
+    color: #666;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.filter-btn:hover {
+    background: #e8e8e8;
+    color: #333;
+    transform: translateY(-1px);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #d63384 0%, #b02a6a 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(214, 51, 132, 0.25);
+}
+</style>
+
+<script>
+    document.querySelectorAll(".save-post-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const postId = this.dataset.postId;
+            fetch(`/accounts/toggle-saved/${postId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCookie('csrftoken')
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    this.textContent = data.saved ? '★' : '☆';
+                });
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').forEach(cookie => {
+                const c = cookie.trim();
+                if (c.startsWith(name + '=')) cookieValue = decodeURIComponent(c.substring(name.length + 1));
+            });
+        }
+        return cookieValue;
+    }
+</script>
+
 {% endblock %}
