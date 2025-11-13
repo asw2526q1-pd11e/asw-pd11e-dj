@@ -283,6 +283,25 @@
     padding: 40px 20px;
     font-size: 1.05rem;
   }
+
+  .comment-save-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #ccc;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.3s;
+  }
+
+  .comment-save-btn:hover {
+    color: #ffb300;
+  }
+
+  .comment-save-btn.saved {
+    color: #ffc107;
+  }
 </style>
 
 <div id="comments-section">
@@ -311,6 +330,17 @@
 <script>
   const postId = {{ post.id }};
   let currentOrder = "top";
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      document.cookie.split(';').forEach(cookie => {
+        const c = cookie.trim();
+        if (c.startsWith(name + '=')) cookieValue = decodeURIComponent(c.substring(name.length + 1));
+      });
+    }
+    return cookieValue;
+  }
 
   function loadComments() {
     fetch(`/blog/posts/${postId}/comments/?order=${currentOrder}`)
@@ -348,6 +378,7 @@
         </div>
         <p>${escapeHtml(comment.content)}</p>
         ${comment.image ? `<img src="${comment.image}" style="max-width:150px;border-radius:8px;margin-top:5px;">` : ""}
+
         <div class="comment-votes">
           <button class="comment-vote-btn up ${upClass}" onclick="voteComment(${comment.id}, 'up')">▲</button>
           <span class="comment-vote-count" id="comment-votes-${comment.id}">${comment.votes}</span>
@@ -404,7 +435,10 @@
   }
 
   function voteComment(commentId, voteType) {
-    const endpoint = voteType === "up" ? `/blog/comments/${commentId}/upvote/` : `/blog/comments/${commentId}/downvote/`;
+    const endpoint = voteType === "up"
+            ? `/blog/comments/${commentId}/upvote/`
+            : `/blog/comments/${commentId}/downvote/`;
+
     fetch(endpoint, {
       method: "POST",
       headers: {

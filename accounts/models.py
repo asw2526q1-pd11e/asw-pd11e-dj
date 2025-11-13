@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from blog.models import Post
+from blog.models import Post, Comment
 
 
 class Profile(models.Model):
@@ -11,6 +11,9 @@ class Profile(models.Model):
     banner = models.ImageField(upload_to='banners/', blank=True, null=True)
     saved_posts = models.ManyToManyField(Post,
                                          blank=True, related_name='saved_by')
+    saved_comments = models.ManyToManyField(Comment,
+                                            blank=True,
+                                            related_name='saved_by_comments')
 
     def __str__(self):
         return self.user.username

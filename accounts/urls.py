@@ -9,4 +9,7 @@ urlpatterns = [
     path('settings/', views.settings_view, name='settings'),
     path('toggle-saved/<int:post_id>/',
          views.toggle_saved_post, name='toggle_saved_post'),
+    path('toggle-saved-comment/<int:comment_id>/',
+         views.toggle_saved_comment, name='toggle_saved_comment'),
+
 ]
