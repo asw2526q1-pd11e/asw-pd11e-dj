@@ -28,9 +28,9 @@ def community_list(request):
     for c in communities:
         community_data.append({
             "obj": c,
-            "fake_subs": (c.id * 13) % 500 + 20,
-            "fake_posts": c.real_posts,  # type: ignore
-            "fake_comments": c.real_comments,  # type: ignore
+            "subs": (c.id * 13) % 500 + 20,
+            "posts": c.real_posts,  # type: ignore
+            "comments": c.real_comments,  # type: ignore
         })
 
     return render(
@@ -41,22 +41,24 @@ def community_list(request):
 
 
 def community_site(request, pk):
-    community = get_object_or_404(Community, id=pk)
-
-    posts = (
-        Post.objects
-        .filter(communities=community)
-        .order_by('-published_date')
+    community = get_object_or_404(
+        Community.objects.annotate(
+            real_posts=Count('posts', distinct=True),
+            real_comments=Count('posts__comments', distinct=True)
+        ),
+        id=pk
     )
 
-    fake_subs = (community.id * 13) % 500 + 20
-    fake_comments = (community.id * 7) % 120 + 3
+    posts = Post.objects.filter(
+            communities=community).order_by('-published_date')
 
-    return render(request,
-                  'communities/community_site.html',
-                  {
-                      'community': community,
-                      'posts': posts,
-                      'fake_subs': fake_subs,
-                      'fake_comments': fake_comments,
-                  })
+    return render(
+        request,
+        'communities/community_site.html',
+        {
+            'community': community,
+            'posts': posts,
+            'subs': (community.id * 13) % 500 + 20,
+            'comments': community.real_comments,  # type: ignore
+        }
+    )
