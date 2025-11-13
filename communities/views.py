@@ -3,6 +3,7 @@ from .forms import CommunityForm
 from .models import Community
 from blog.models import Post
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 
 
 @login_required
@@ -18,16 +19,18 @@ def community_create(request):
 
 
 def community_list(request):
-    communities = Community.objects.all()
+    communities = Community.objects.annotate(
+        real_posts=Count('posts', distinct=True),
+        real_comments=Count('posts__comments', distinct=True)
+    )
 
     community_data = []
     for c in communities:
-        real_posts = c.posts.count()  # type: ignore
         community_data.append({
             "obj": c,
             "fake_subs": (c.id * 13) % 500 + 20,
-            "fake_comments": (c.id * 7) % 120 + 3,
-            "fake_posts": real_posts,
+            "fake_posts": c.real_posts,  # type: ignore
+            "fake_comments": c.real_comments,  # type: ignore
         })
 
     return render(
