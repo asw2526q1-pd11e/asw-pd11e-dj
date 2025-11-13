@@ -1,5 +1,6 @@
 <div class="post-card"
      style="
+         position: relative;
          background-color: #fff;
          border: 2px solid #d63384;
          border-radius: 10px;
@@ -11,6 +12,27 @@
          align-items: flex-start;
          box-shadow: 0 4px 8px rgba(0,0,0,0.05);
      ">
+
+    {% if user == post.author %}
+    <form action="{% url 'blog:post_delete' post.pk %}" method="post"
+          style="position: absolute; top: 10px; right: 10px;"
+          onsubmit="return confirm('¿Estás seguro de que quieres borrar este post y todos sus comentarios?');">
+        {% csrf_token %}
+        <button type="submit" title="Eliminar post"
+                style="
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: #dc3545;
+                    font-size: 1.3em;
+                    transition: color 0.2s;
+                "
+                onmouseover="this.style.color='#b30000'"
+                onmouseout="this.style.color='#dc3545'">
+            🗑️
+        </button>
+    </form>
+    {% endif %}
 
     {% if post.image %}
     <div style="flex-shrink: 0;">
@@ -54,11 +76,8 @@
             </a>
             {% endif %}
             {% if user == post.author %}
-        <a href="{% url 'blog:post_edit' post.pk %}" class="btn-rose ms-2">
-    Edit
-</a>
-    {% endif %}
-            
+                <a href="{% url 'blog:post_edit' post.pk %}" class="btn-rose ms-2">Edit</a>
+            {% endif %}
         </h2>
 
         <p style="color: #666; margin-top: 5px;">
@@ -74,31 +93,30 @@
             <button class="save-post-btn {% if post in user.profile.saved_posts.all %}saved{% endif %}" data-post-id="{{ post.id }}">
                 {% if post in user.profile.saved_posts.all %}★{% else %}☆{% endif %}
             </button>
-
         </p>
 
         {% if post.communities.exists %}
-            <div style="margin-top: 5px; font-size: 0.95em;">
-                <span style="color:#d63384; font-weight:bold;">Comunidades:</span>
-                {% for community in post.communities.all %}
-                    <a href="{% url 'communities:community_site' community.pk %}"
-                       style="
-                           display: inline-block;
-                           background-color: #f8d7da;
-                           color: #b30059;
-                           text-decoration: none;
-                           padding: 2px 8px;
-                           border-radius: 12px;
-                           margin-left: 4px;
-                           font-size: 0.85em;
-                           transition: background-color 0.2s;
-                       "
-                       onmouseover="this.style.backgroundColor='#f1b6c1'"
-                       onmouseout="this.style.backgroundColor='#f8d7da'">
-                        {{ community.name }}
-                    </a>
-                {% endfor %}
-            </div>
+        <div style="margin-top: 5px; font-size: 0.95em;">
+            <span style="color:#d63384; font-weight:bold;">Comunidades:</span>
+            {% for community in post.communities.all %}
+                <a href="{% url 'communities:community_site' community.pk %}"
+                   style="
+                       display: inline-block;
+                       background-color: #f8d7da;
+                       color: #b30059;
+                       text-decoration: none;
+                       padding: 2px 8px;
+                       border-radius: 12px;
+                       margin-left: 4px;
+                       font-size: 0.85em;
+                       transition: background-color 0.2s;
+                   "
+                   onmouseover="this.style.backgroundColor='#f1b6c1'"
+                   onmouseout="this.style.backgroundColor='#f8d7da'">
+                    {{ community.name }}
+                </a>
+            {% endfor %}
+        </div>
         {% endif %}
 
         <p style="margin-top: 10px; color:#333;">{{ post.content }}</p>
@@ -122,20 +140,18 @@
     color: #fff;
 }
 
-    .save-post-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 1.5em;
-        color: #ffc107;
-        padding: 0;
-        line-height: 1;
-        transition: color 0.3s;
-    }
+.save-post-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #ffc107;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.3s;
+}
 
-    .save-post-btn:hover {
-        color: #ffb300;
-    }
-
+.save-post-btn:hover {
+    color: #ffb300;
+}
 </style>
-

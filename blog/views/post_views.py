@@ -255,3 +255,43 @@ def search_view(request):
         "comments_results": comments_results,
     }
     return render(request, "blog/search_results.html", context)
+
+
+@login_required
+@require_POST
+def post_delete(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    # Solo el autor puede borrar su post
+    if request.user != post.author:
+        return HttpResponseForbidden("No pots esborrar aquest post.")
+
+    # Django borrará automáticamente los comentarios en cascada
+    post.delete()
+
+    return redirect("blog:post_list")
+
+
+@login_required
+@require_POST
+def comment_delete(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+
+    # Solo el autor puede borrar su comentario
+    if request.user != comment.author:
+        return HttpResponseForbidden("No pots esborrar aquest comentari.")
+
+    # 🔁 Borrado recursivo de replies
+    def delete_with_replies(c):
+        for reply in c.replies.all():
+            delete_with_replies(reply)
+        c.delete()
+
+    delete_with_replies(comment)
+
+    # Respuesta JSON si viene de AJAX
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({"success": True})
+    else:
+        return redirect(request.META.get("HTTP_REFERER",
+                                         f"/blog/posts/{comment.post.id}/"))
