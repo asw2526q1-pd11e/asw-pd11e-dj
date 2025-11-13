@@ -79,3 +79,18 @@ def toggle_saved_post(request, post_id):
         saved = True
 
     return JsonResponse({"saved": saved})
+
+
+@login_required
+def toggle_saved_comment(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+    profile = request.user.profile
+
+    if comment in profile.saved_comments.all():
+        profile.saved_comments.remove(comment)
+        saved = False
+    else:
+        profile.saved_comments.add(comment)
+        saved = True
+
+    return JsonResponse({"saved": saved})

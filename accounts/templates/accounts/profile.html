@@ -5,7 +5,6 @@
 {% block content %}
 
 <div class="position-relative mb-5">
-
     {% if profile.banner %}
     <img src="{{ profile.banner.url }}"
          class="w-100"
@@ -15,25 +14,16 @@
     {% if profile.avatar %}
     <img src="{{ profile.avatar.url }}"
          class="rounded-circle position-absolute"
-         style="
-            width: 140px;
-            height: 140px;
-            object-fit: cover;
-            left: 20px;
-            bottom: -70px;
-            border: 4px solid white;">
+         style="width: 140px; height: 140px; object-fit: cover; left: 20px; bottom: -70px; border: 4px solid white;">
     {% endif %}
-
 </div>
 
 <div style="margin-left: 20px; margin-top: 100px;">
-
     <h2 class="fw-bold">{{ profile.nombre|default:user_obj.username }}</h2>
-
     <p class="text-muted mb-2">@{{ user_obj.username }}</p>
 
     <p class="text-muted mb-1">
-        {{ num_posts }} Posts · {{ num_comments }} Comments
+        {{ num_posts }} Posts · {{ num_comments }} Comentarios · {{ profile.saved_posts.count|add:profile.saved_comments.count }} Guardados
     </p>
 
     <p class="mb-2">
@@ -47,7 +37,6 @@
     <p class="text-muted" style="font-size: 0.9rem;">
         Se unió el {{ user_obj.date_joined|date:"j F Y" }}
     </p>
-
 </div>
 
 <div class="filter-toggle-group mt-3">
@@ -62,40 +51,158 @@
     {% empty %}
     <p>Este usuario no ha publicado nada.</p>
     {% endfor %}
-
 </div>
 
 <div id="user-comments" class="user-comments mt-3 hidden">
-    {% for comment in comments %}
-    <div class="card mb-2 p-2">
-        <p>{{ comment.content|truncatewords:15 }}</p>
-        <small class="text-muted">En: {{ comment.post.title }}</small>
+    <div id="comments-container">
+        {% for comment in comments %}
+        <div class="comment" id="comment-{{ comment.id }}">
+            <div class="meta">
+                <strong>
+                    <a href="{% url 'accounts:profile' comment.author.username %}" style="color:#d63384; text-decoration:none;">
+                        {{ comment.author.username }}
+                    </a>
+                </strong>
+                <br>
+                <small style="color:#777; font-size:0.85em;">
+                    Comentado en
+                    <a href="{% url 'blog:post_detail' comment.post.id %}" style="color:#d63384; text-decoration:none;">
+                        {{ comment.post.title }}
+                    </a>
+                    {% if comment.post.community %}
+                    en
+                    <a href="{% url 'communities:detail' comment.post.community.id %}" style="color:#d63384; text-decoration:none;">
+                        {{ comment.post.community.name }}
+                    </a>
+                    {% endif %}
+                </small>
+            </div>
+
+            <p>{{ comment.content|linebreaks }}</p>
+
+            {% if comment.image %}
+            <img src="{{ comment.image.url }}" style="max-width:150px;border-radius:8px;margin-top:5px;">
+            {% endif %}
+
+            <div class="comment-votes">
+                <button class="comment-vote-btn up {% if comment.user_vote == 1 %}active{% endif %}" onclick="voteComment({{ comment.id }}, 'up')">▲</button>
+                <span class="comment-vote-count" id="comment-votes-{{ comment.id }}">{{ comment.votes }}</span>
+                <button class="comment-vote-btn down {% if comment.user_vote == -1 %}active{% endif %}" onclick="voteComment({{ comment.id }}, 'down')">▼</button>
+            </div>
+
+            <div class="comment-save">
+                <button class="comment-save-btn {% if comment in profile.saved_comments.all %}saved{% endif %}"
+                        data-comment-id="{{ comment.id }}"
+                        onclick="toggleSavedComment({{ comment.id }}, this)">
+                    {% if comment in profile.saved_comments.all %}★{% else %}☆{% endif %}
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center">Este usuario no ha comentado nada.</p>
+        {% endfor %}
     </div>
-    {% empty %}
-    <p>Este usuario no ha comentado nada.</p>
-    {% endfor %}
 </div>
 
 <div id="user-saved" class="user-saved mt-3 hidden">
+    <h4>Posts guardados</h4>
     {% for post in saved_posts %}
     {% include "blog/post_card.html" with post=post %}
     {% empty %}
-    <p>Este usuario no ha guardado ningún post.</p>
+    <p class="text-muted">No hay posts guardados.</p>
+    {% endfor %}
+
+    <hr class="my-4">
+
+    <h4>Comentarios guardados</h4>
+    {% for comment in profile.saved_comments.all %}
+    <div class="comment">
+        <div class="meta">
+            <strong>
+                <a href="{% url 'accounts:profile' comment.author.username %}" style="color:#d63384; text-decoration:none;">
+                    {{ comment.author.username }}
+                </a>
+            </strong>
+            <br>
+            <small style="color:#777; font-size:0.85em;">
+                En
+                <a href="{% url 'blog:post_detail' comment.post.id %}" style="color:#d63384; text-decoration:none;">
+                    {{ comment.post.title }}
+                </a>
+            </small>
+        </div>
+        <p>{{ comment.content|truncatewords:25|linebreaks }}</p>
+        {% if comment.image %}
+        <img src="{{ comment.image.url }}" style="max-width:150px;border-radius:8px;margin-top:5px;">
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-muted">No hay comentarios guardados.</p>
     {% endfor %}
 </div>
 
-
 <style>
-    .hidden {
-        display: none;
+    .hidden { display: none; }
+
+    .comment {
+        background-color: #fafafa;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
+    .comment strong { color: #d63384; }
+
+    .comment .meta {
+        font-size: 0.9em;
+        color: #777;
+        margin-bottom: 5px;
+    }
+
+    .comment-votes {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    .comment-vote-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2em;
+        padding: 0;
+        transition: transform 0.2s;
+    }
+    .comment-vote-btn:hover { transform: scale(1.2); }
+    .comment-vote-btn.up.active { color: #28a745; }
+    .comment-vote-btn.down.active { color: #dc3545; }
+    .comment-vote-btn.up, .comment-vote-btn.down { color: #ccc; }
+    .comment-vote-count {
+        font-weight: bold;
+        font-size: 0.95em;
+        color: #555;
+        min-width: 30px;
+        text-align: center;
+    }
+
+    .comment-save-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.4em;
+        color: #ffb700;
+        margin-top: 5px;
+        transition: transform 0.2s;
+    }
+    .comment-save-btn:hover { transform: scale(1.2); }
+    .comment-save-btn.saved { color: #ffb700; }
+    .comment-save-btn:not(.saved) { color: #ccc; }
 
     .filter-toggle-group {
         display: flex;
         gap: 0.75rem;
         flex-wrap: wrap;
     }
-
     .filter-btn {
         border: 2px solid var(--rose-400);
         background: white;
@@ -106,11 +213,7 @@
         cursor: pointer;
         transition: all var(--transition-base);
     }
-
-    .filter-btn:hover {
-        background: #fff1f2;
-    }
-
+    .filter-btn:hover { background: #fff1f2; }
     .filter-btn.active {
         background: var(--rose-500);
         color: white;
@@ -130,16 +233,64 @@
             btn.addEventListener('click', function() {
                 buttons.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-
                 const mode = this.dataset.mode;
-
                 posts.classList.toggle('hidden', mode !== 'posts');
                 comments.classList.toggle('hidden', mode !== 'comments');
                 saved.classList.toggle('hidden', mode !== 'saved');
             });
         });
     });
-</script>
 
+    function voteComment(commentId, voteType) {
+        const endpoint = voteType === "up" ? `/blog/comments/${commentId}/upvote/` : `/blog/comments/${commentId}/downvote/`;
+        fetch(endpoint, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCookie('csrftoken'), "Content-Type": "application/json" }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if(data.votes !== undefined)
+                    document.getElementById(`comment-votes-${commentId}`).textContent = data.votes;
+            });
+    }
+
+    document.querySelectorAll(".save-post-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const postId = this.dataset.postId;
+            fetch(`/accounts/toggle-saved/${postId}/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": getCookie('csrftoken') }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    this.textContent = data.saved ? '★' : '☆';
+                });
+        });
+    });
+
+    function toggleSavedComment(commentId, btn) {
+        fetch(`/accounts/toggle-saved-comment/${commentId}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": getCookie('csrftoken') }
+        })
+            .then(res => res.json())
+            .then(data => {
+                btn.textContent = data.saved ? '★' : '☆';
+                btn.classList.toggle('saved', data.saved);
+            })
+            .catch(() => alert("Error al guardar el comentario."));
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').forEach(cookie => {
+                const c = cookie.trim();
+                if (c.startsWith(name + '=')) cookieValue = decodeURIComponent(c.substring(name.length + 1));
+            });
+        }
+        return cookieValue;
+    }
+</script>
 
 {% endblock %}

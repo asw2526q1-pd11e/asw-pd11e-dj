@@ -131,6 +131,25 @@
   .cancel-btn:hover {
     background-color: #545b62;
   }
+
+  .comment-save-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #ccc;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.3s;
+  }
+
+  .comment-save-btn:hover {
+    color: #ffb300;
+  }
+
+  .comment-save-btn.saved {
+    color: #ffc107;
+  }
 </style>
 
 <div id="comments-section">
@@ -151,18 +170,29 @@
 <script>
   const postId = {{ post.id }};
 
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      document.cookie.split(';').forEach(cookie => {
+        const c = cookie.trim();
+        if (c.startsWith(name + '=')) cookieValue = decodeURIComponent(c.substring(name.length + 1));
+      });
+    }
+    return cookieValue;
+  }
+
   function loadComments() {
     fetch(`/blog/posts/${postId}/comments/`)
-      .then(res => res.json())
-      .then(comments => {
-        const container = document.getElementById("comments-container");
-        container.innerHTML = "";
-        if (comments.length === 0) {
-          container.innerHTML = "<p class='text-muted text-center'>Aún no hay comentarios. Sé el primero en opinar ✨</p>";
-        } else {
-          renderComments(comments, container, 0);
-        }
-      });
+            .then(res => res.json())
+            .then(comments => {
+              const container = document.getElementById("comments-container");
+              container.innerHTML = "";
+              if (comments.length === 0) {
+                container.innerHTML = "<p class='text-muted text-center'>Aún no hay comentarios. Sé el primero en opinar ✨</p>";
+              } else {
+                renderComments(comments, container, 0);
+              }
+            });
   }
 
   function renderComments(comments, container, level) {
@@ -172,27 +202,31 @@
       div.style.marginLeft = `${level * 30}px`;
       div.id = `comment-${comment.id}`;
 
-      // Determinar color de botones según voto del usuario
       const upClass = comment.user_vote === 1 ? "active" : "";
       const downClass = comment.user_vote === -1 ? "active" : "";
 
       div.innerHTML = `
         <div class="meta">
-            <strong>
-                <a href="/accounts/profile/${comment.author}" style="color:#d63384; text-decoration:none;">
-                ${escapeHtml(comment.author)}
-                </a>
-            </strong>
-            — <em>${new Date(comment.published_date).toLocaleString()}</em>
+          <strong>
+            <a href="/accounts/profile/${comment.author}" style="color:#d63384; text-decoration:none;">
+              ${escapeHtml(comment.author)}
+            </a>
+          </strong>
+          — <em>${new Date(comment.published_date).toLocaleString()}</em>
         </div>
 
         <p>${escapeHtml(comment.content)}</p>
         ${comment.image ? `<img src="${comment.image}" style="max-width:150px;border-radius:8px;margin-top:5px;">` : ""}
+
         <div class="comment-votes">
           <button class="comment-vote-btn up ${upClass}" onclick="voteComment(${comment.id}, 'up')">▲</button>
           <span class="comment-vote-count" id="comment-votes-${comment.id}">${comment.votes}</span>
           <button class="comment-vote-btn down ${downClass}" onclick="voteComment(${comment.id}, 'down')">▼</button>
           <button class="reply-btn" onclick="showReplyForm(${comment.id})">Responder</button>
+          <button class="comment-save-btn ${comment.saved_by_user ? 'saved' : ''}"
+                  onclick="toggleSavedComment(${comment.id}, this)">
+            ${comment.saved_by_user ? '★' : '☆'}
+          </button>
         </div>
       `;
 
@@ -204,22 +238,17 @@
     });
   }
 
-  function showReplyForm(commentId) {
-    document.querySelectorAll(".reply-form").forEach(f => f.remove());
-    const commentDiv = document.getElementById(`comment-${commentId}`);
-    const replyFormDiv = document.createElement("div");
-    replyFormDiv.classList.add("reply-form");
-    replyFormDiv.innerHTML = `
-      <form class="reply-comment-form" data-parent-id="${commentId}" enctype="multipart/form-data">
-        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-        <textarea name="content" placeholder="Tu respuesta..." required></textarea>
-        <input type="file" name="image" accept="image/*">
-        <button type="submit">Responder</button>
-        <button type="button" class="cancel-btn" onclick="this.closest('.reply-form').remove()">Cancelar</button>
-      </form>
-    `;
-    commentDiv.appendChild(replyFormDiv);
-    replyFormDiv.querySelector("form").addEventListener("submit", handleCommentSubmit);
+  function toggleSavedComment(commentId, btn) {
+    fetch(`/accounts/toggle-saved-comment/${commentId}/`, {
+      method: "POST",
+      headers: { "X-CSRFToken": getCookie('csrftoken') }
+    })
+            .then(res => res.json())
+            .then(data => {
+              btn.textContent = data.saved ? '★' : '☆';
+              btn.classList.toggle('saved', data.saved);
+            })
+            .catch(() => alert("Error al guardar el comentario."));
   }
 
   function handleCommentSubmit(e) {
@@ -243,10 +272,29 @@
     });
   }
 
-  document.getElementById("main-comment-form").addEventListener("submit", handleCommentSubmit);
+  function showReplyForm(commentId) {
+    document.querySelectorAll(".reply-form").forEach(f => f.remove());
+    const commentDiv = document.getElementById(`comment-${commentId}`);
+    const replyFormDiv = document.createElement("div");
+    replyFormDiv.classList.add("reply-form");
+    replyFormDiv.innerHTML = `
+      <form class="reply-comment-form" data-parent-id="${commentId}" enctype="multipart/form-data">
+        <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+        <textarea name="content" placeholder="Tu respuesta..." required></textarea>
+        <input type="file" name="image" accept="image/*">
+        <button type="submit">Responder</button>
+        <button type="button" class="cancel-btn" onclick="this.closest('.reply-form').remove()">Cancelar</button>
+      </form>
+    `;
+    commentDiv.appendChild(replyFormDiv);
+    replyFormDiv.querySelector("form").addEventListener("submit", handleCommentSubmit);
+  }
 
   function voteComment(commentId, voteType) {
-    const endpoint = voteType === "up" ? `/blog/comments/${commentId}/upvote/` : `/blog/comments/${commentId}/downvote/`;
+    const endpoint = voteType === "up"
+            ? `/blog/comments/${commentId}/upvote/`
+            : `/blog/comments/${commentId}/downvote/`;
+
     fetch(endpoint, {
       method: "POST",
       headers: {
@@ -254,28 +302,13 @@
         "Content-Type": "application/json"
       }
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.votes !== undefined) {
-          document.getElementById(`comment-votes-${commentId}`).textContent = data.votes;
-        }
-        loadComments(); // refresca los colores según voto
-      });
-  }
-
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-      const cookies = document.cookie.split(";");
-      for (let cookie of cookies) {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + "=")) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
+            .then(res => res.json())
+            .then(data => {
+              if (data.votes !== undefined) {
+                document.getElementById(`comment-votes-${commentId}`).textContent = data.votes;
+              }
+              loadComments();
+            });
   }
 
   function escapeHtml(text) {
@@ -283,6 +316,8 @@
     div.textContent = text;
     return div.innerHTML;
   }
+
+  document.getElementById("main-comment-form").addEventListener("submit", handleCommentSubmit);
 
   loadComments();
 </script>
