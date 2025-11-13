@@ -7,6 +7,7 @@ from blog.models.votes import VotePost, VoteComment
 from blog.forms import PostForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from django.db.models import Count
 
 
 @login_required
@@ -29,9 +30,21 @@ def post_edit(request, pk):
 
 
 def post_list(request):
-    posts = Post.objects.all()
-    posts_data = []
+    order = request.GET.get("order", "nou")  # per defecte nou
 
+    if order == "nou":
+        posts = Post.objects.all().order_by("-published_date")
+    elif order == "antic":
+        posts = Post.objects.all().order_by("published_date")
+    elif order == "mes_comentaris":
+        posts = Post.objects.annotate(num_comments=Count(
+            'comments')).order_by("-num_comments")
+    elif order == "mes_vots":
+        posts = Post.objects.all().order_by("-votes")
+    else:
+        posts = Post.objects.all().order_by("-published_date")
+
+    posts_data = []
     for post in posts:
         user_vote = 0
         if request.user.is_authenticated:
