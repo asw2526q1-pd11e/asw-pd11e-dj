@@ -53,6 +53,13 @@
                 🔗
             </a>
             {% endif %}
+            {% if user == post.author %}
+        <!-- Edit button visible only to the author -->
+        <a href="{% url 'blog:post_edit' post.pk %}" class="btn-rose ms-2">
+    Edit
+</a>
+    {% endif %}
+            
         </h2>
 
         <p style="color: #666; margin-top: 5px;">
@@ -100,6 +107,22 @@
 </div>
 
 <style>
+.btn-rose {
+    border: 2px solid #d63384;
+    color: #d63384;
+    background-color: transparent;
+    padding: 4px 10px;
+    font-size: 0.8em;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-rose:hover {
+    background-color: #d63384;
+    color: #fff;
+}
+</style>
     .save-post-btn {
         background: none;
         border: none;

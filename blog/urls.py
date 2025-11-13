@@ -49,4 +49,7 @@ urlpatterns = [
         post_views.comment_downvote,
         name="comment_downvote",
     ),  # /comments/1/downvote/
+    path("posts/<int:pk>/edit/",
+         post_views.post_edit,
+         name="post_edit"),
 ]
