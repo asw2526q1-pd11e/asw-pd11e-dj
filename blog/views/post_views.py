@@ -295,3 +295,22 @@ def comment_delete(request, comment_id):
     else:
         return redirect(request.META.get("HTTP_REFERER",
                                          f"/blog/posts/{comment.post.id}/"))
+
+
+@login_required
+@require_POST
+def comment_edit(request, comment_id):
+    comment = get_object_or_404(Comment, pk=comment_id)
+
+    # Solo el autor puede editar su comentario
+    if request.user != comment.author:
+        return HttpResponseForbidden("No pots editar aquest comentari.")
+
+    new_content = request.POST.get("content", "").strip()
+    if new_content:
+        comment.content = new_content
+        comment.save()
+        return JsonResponse({"success": True, "new_content": new_content})
+    else:
+        return JsonResponse({"success": False, "error":
+                             "El contingut no pot estar buit."})

@@ -175,6 +175,22 @@
     transform: scale(1.15);
   }
 
+  .edit-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1.1em;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+  }
+
+  .edit-btn:hover {
+    color: #28a745;
+    transform: scale(1.15);
+  }
+
   .comment-form {
     background: white;
     border: 1px solid #e8e8e8;
@@ -401,6 +417,7 @@
           <button class="comment-vote-btn down ${downClass}" onclick="voteComment(${comment.id}, 'down')">▼</button>
           <button class="reply-btn" onclick="showReplyForm(${comment.id})">Respondre</button>
           ${comment.author === currentUser ? `
+            <button class="edit-btn" onclick="showEditForm(${comment.id})" title="Editar comentari">✏️</button>
             <button class="delete-btn" onclick="deleteComment(${comment.id})" title="Eliminar comentari">🗑️</button>
           ` : ""}
         </div>
@@ -451,6 +468,45 @@
     `;
     commentDiv.appendChild(replyFormDiv);
     replyFormDiv.querySelector("form").addEventListener("submit", handleCommentSubmit);
+  }
+
+  function showEditForm(commentId) {
+    // Eliminar cualquier otro formulario de edición abierto
+    document.querySelectorAll(".reply-form, .edit-form").forEach(f => f.remove());
+
+    const commentDiv = document.getElementById(`comment-${commentId}`);
+    const currentContent = commentDiv.querySelector("p").innerText;
+
+    const editFormDiv = document.createElement("div");
+    editFormDiv.classList.add("edit-form");
+    editFormDiv.innerHTML = `
+      <form class="edit-comment-form" data-comment-id="${commentId}">
+        <textarea name="content" required>${currentContent}</textarea>
+        <button type="submit">Guardar</button>
+        <button type="button" class="cancel-btn" onclick="this.closest('.edit-form').remove()">Cancel·lar</button>
+      </form>
+    `;
+    commentDiv.appendChild(editFormDiv);
+
+    editFormDiv.querySelector("form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      fetch(`/blog/comments/${commentId}/edit/`, {
+        method: "POST",
+        body: formData,
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Actualizamos el contenido en el DOM
+          commentDiv.querySelector("p").innerText = data.new_content;
+          editFormDiv.remove();
+        } else {
+          alert(data.error || "Error al actualizar el comentari.");
+        }
+      });
+    });
   }
 
   function handleCommentSubmit(e) {
