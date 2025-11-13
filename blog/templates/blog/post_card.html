@@ -53,6 +53,13 @@
                 🔗
             </a>
             {% endif %}
+            {% if user == post.author %}
+        <!-- Edit button visible only to the author -->
+        <a href="{% url 'blog:post_edit' post.pk %}" class="btn btn-outline-rose btn-sm ms-2" style="border-radius:10px; font-size:0.8em;">
+            Edit
+        </a>
+    {% endif %}
+            
         </h2>
 
         <p style="color: #666; margin-top: 5px;">

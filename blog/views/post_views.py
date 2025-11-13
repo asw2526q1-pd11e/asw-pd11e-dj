@@ -6,6 +6,26 @@ from blog.models import Post, Comment
 from blog.models.votes import VotePost, VoteComment
 from blog.forms import PostForm
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+
+
+@login_required
+def post_edit(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+
+    # Only the author can edit
+    if request.user != post.author:
+        return HttpResponseForbidden("No tens permís per editar aquest post.")
+
+    if request.method == "POST":
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            return redirect(post.get_absolute_url())
+    else:
+        form = PostForm(instance=post)
+
+    return render(request, "blog/post_form.html", {"form": form, "post": post})
 
 
 def post_list(request):
