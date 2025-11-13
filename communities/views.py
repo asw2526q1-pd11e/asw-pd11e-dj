@@ -42,9 +42,9 @@ def community_list(request):
     for c in communities:
         community_data.append({
             "obj": c,
-            "subs": c.subscribers.count(),           # real subscriber count
-            "posts": c.real_posts,                  # real posts
-            "comments": c.real_comments,            # real comments
+            "subs": c.subscribers.count(),
+            "posts": c.real_posts,  # type: ignore
+            "comments": c.real_comments,  # type: ignore
         })
 
     return render(
@@ -74,8 +74,8 @@ def community_site(request, pk):
         {
             'community': community,
             'posts': posts,
-            'subs': community.subscribers.count(),  # real subscriber count
-            'posts_count': community.real_posts,    # real posts
-            'comments_count': community.real_comments,  # real comments
+            'subs': community.subscribers.count(),
+            'posts_count': community.real_posts,  # type: ignore
+            'comments_count': community.real_comments,  # type: ignore
         }
     )
