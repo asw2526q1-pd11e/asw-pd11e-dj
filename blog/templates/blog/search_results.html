@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Búsqueda</h1>
+
+<form method="get" action="{% url 'blog:search' %}" class="mb-3">
+    <input type="text" name="q" placeholder="Buscar..." value="{{ query }}" class="form-control mb-2">
+
+    <select name="type" class="form-select mb-2">
+        <option value="posts" {% if search_type == "posts" %}selected{% endif %}>Posts</option>
+        <option value="comments" {% if search_type == "comments" %}selected{% endif %}>Comentaris</option>
+        <option value="both" {% if search_type == "both" %}selected{% endif %}>Tot</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary">Buscar</button>
+</form>
+
+{% if search_type == "both" %}
+    {% if posts_results %}
+        <h4>Posts</h4>
+        <ul>
+            {% for post in posts_results %}
+                <li><a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if comments_results %}
+        <h4>Comentaris</h4>
+        <ul>
+            {% for comment in comments_results %}
+                <li>
+                    Comentario en <a href="{% url 'blog:post_detail' comment.post.pk %}">{{ comment.post.title }}</a>:
+                    {{ comment.content|truncatewords:15 }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+{% else %}
+    {% if results %}
+        <ul>
+        {% for item in results %}
+            {% if search_type == "posts" %}
+                <li><a href="{% url 'blog:post_detail' item.pk %}">{{ item.title }}</a></li>
+            {% elif search_type == "comments" %}
+                <li>
+                    Comentario en <a href="{% url 'blog:post_detail' item.post.pk %}">{{ item.post.title }}</a>:
+                    {{ item.content|truncatewords:15 }}
+                </li>
+            {% endif %}
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No se encontraron resultados.</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}

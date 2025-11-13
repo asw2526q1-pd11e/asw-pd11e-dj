@@ -52,4 +52,6 @@ urlpatterns = [
     path("posts/<int:pk>/edit/",
          post_views.post_edit,
          name="post_edit"),
+    path("search/", post_views.search_view, name="search"),
+
 ]
