@@ -167,8 +167,9 @@
 
   <!-- 🔹 Filtres -->
   <div class="filter-bar">
-    <button class="filter-btn active" data-order="newest">Nou</button>
-    <button class="filter-btn" data-order="oldest">Antic</button>
+    <button class="filter-btn active" data-order="top">Top</button>
+    <button class="filter-btn" data-order="new">Nou</button>
+    <button class="filter-btn" data-order="old">Antic</button>
   </div>
 
   <!-- Formulari -->
@@ -186,11 +187,10 @@
 
 <script>
   const postId = {{ post.id }};
-  let currentOrder = "newest"; // per defecte
+  let currentOrder = "top";
 
-  // Carrega inicial
   function loadComments() {
-    fetch(`/blog/posts/${postId}/comments/`)
+    fetch(`/blog/posts/${postId}/comments/?order=${currentOrder}`)
       .then(res => res.json())
       .then(comments => {
         const container = document.getElementById("comments-container");
@@ -198,12 +198,6 @@
         if (comments.length === 0) {
           container.innerHTML = "<p class='text-muted text-center'>Encara no hi ha comentaris. Sigues el primer ✨</p>";
         } else {
-          // Ordena segons filtre
-          if (currentOrder === "newest") {
-            comments.sort((a, b) => new Date(b.published_date) - new Date(a.published_date));
-          } else {
-            comments.sort((a, b) => new Date(a.published_date) - new Date(b.published_date));
-          }
           renderComments(comments, container, 0);
         }
       });
@@ -303,7 +297,7 @@
       });
   }
 
-  // Filtres: "Nou" i "Antic"
+  // Filtre buttons
   document.querySelectorAll(".filter-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
