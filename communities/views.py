@@ -32,6 +32,7 @@ def community_create(request):
 
 
 def community_list(request):
+    # Annotate each community with post and comment counts
     communities = Community.objects.annotate(
         real_posts=Count('posts', distinct=True),
         real_comments=Count('posts__comments', distinct=True)
@@ -41,9 +42,9 @@ def community_list(request):
     for c in communities:
         community_data.append({
             "obj": c,
-            "subs": (c.id * 13) % 500 + 20,
-            "posts": c.real_posts,  # type: ignore
-            "comments": c.real_comments,  # type: ignore
+            "subs": c.subscribers.count(),           # real subscriber count
+            "posts": c.real_posts,                  # real posts
+            "comments": c.real_comments,            # real comments
         })
 
     return render(
@@ -54,6 +55,7 @@ def community_list(request):
 
 
 def community_site(request, pk):
+    # Annotate single community with post and comment counts
     community = get_object_or_404(
         Community.objects.annotate(
             real_posts=Count('posts', distinct=True),
@@ -63,7 +65,8 @@ def community_site(request, pk):
     )
 
     posts = Post.objects.filter(
-            communities=community).order_by('-published_date')
+        communities=community
+    ).order_by('-published_date')
 
     return render(
         request,
@@ -71,7 +74,8 @@ def community_site(request, pk):
         {
             'community': community,
             'posts': posts,
-            'subs': (community.id * 13) % 500 + 20,
-            'comments': community.real_comments,  # type: ignore
+            'subs': community.subscribers.count(),  # real subscriber count
+            'posts_count': community.real_posts,    # real posts
+            'comments_count': community.real_comments,  # real comments
         }
     )

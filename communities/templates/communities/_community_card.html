@@ -1,19 +1,21 @@
 <tr>
+  <!-- Community avatar -->
   <td class="px-4 py-3">
     <a href="{% url 'communities:community_site' community.obj.pk %}">
       {% if community.obj.avatar %}
-      <img src="{{ community.obj.avatar.url }}" alt="{{ community.obj.name }}" 
-           class="rounded-circle shadow-sm border border-rose-300" 
-           width="40" height="40" style="object-fit: cover;" />
+        <img src="{{ community.obj.avatar.url }}" alt="{{ community.obj.name }}" 
+             class="rounded-circle shadow-sm border border-rose-300" 
+             width="40" height="40" style="object-fit: cover;" />
       {% else %}
-      <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-rose-300" 
-           style="width: 40px; height: 40px;">
-        <span class="text-muted small">N/A</span>
-      </div>
+        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center border border-rose-300" 
+             style="width: 40px; height: 40px;">
+          <span class="text-muted small">N/A</span>
+        </div>
       {% endif %}
     </a>
   </td>
 
+  <!-- Community name -->
   <td>
     <a href="{% url 'communities:community_site' community.obj.pk %}" 
        class="text-decoration-none text-dark fw-semibold">
@@ -21,14 +23,33 @@
     </a>
   </td>
 
+  <!-- Community ID -->
   <td><span class="badge bg-rose-gradient small rounded-pill">{{ community.obj.id }}</span></td>
+
+  <!-- Subscriber count -->
   <td class="text-muted">{{ community.subs }}</td>
+
+  <!-- Posts count -->
   <td class="text-muted">{{ community.posts }}</td>
+
+  <!-- Comments count -->
   <td class="text-muted">{{ community.comments }}</td>
+
+  <!-- Subscribe/unsubscribe button -->
   <td class="text-end pe-4">
-    <button class="subscribe-btn" onclick="this.classList.toggle('subscribed')">
-      <span class="subscribe-text">Subscriu-te</span>
-      <span class="subscribed-text">Subscrit</span>
-    </button>
+    <form method="post" action="{% url 'communities:toggle_subscription' community.obj.pk %}">
+      {% csrf_token %}
+      {% if user in community.obj.subscribers.all %}
+        <button type="submit" class="subscribe-btn subscribed">
+          <span class="subscribe-text">Subscriu-te</span>
+          <span class="subscribed-text">Subscrit</span>
+        </button>
+      {% else %}
+        <button type="submit" class="subscribe-btn">
+          <span class="subscribe-text">Subscriu-te</span>
+          <span class="subscribed-text">Subscrit</span>
+        </button>
+      {% endif %}
+    </form>
   </td>
 </tr>
