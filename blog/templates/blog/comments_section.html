@@ -229,6 +229,10 @@
     box-shadow: 0 4px 12px rgba(214, 51, 132, 0.3);
   }
 
+  .comment-form button:active {
+    transform: translateY(0);
+  }
+
   .reply-form {
     margin-top: 16px;
     margin-left: 30px;
@@ -236,6 +240,46 @@
     border-left: 3px solid #d63384;
     padding: 16px;
     border-radius: 8px;
+  }
+
+  .reply-form textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.9em;
+    font-family: inherit;
+    min-height: 70px;
+    resize: vertical;
+    transition: all 0.2s ease;
+  }
+
+  .reply-form textarea:focus {
+    outline: none;
+    border-color: #d63384;
+    box-shadow: 0 0 0 3px rgba(214, 51, 132, 0.1);
+  }
+
+  .reply-form input[type="file"] {
+    margin: 10px 0;
+    font-size: 0.85em;
+  }
+
+  .reply-form button {
+    background: linear-gradient(135deg, #d63384 0%, #b02a6a 100%);
+    color: white;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .reply-form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(214, 51, 132, 0.25);
   }
 
   .cancel-btn {
@@ -246,6 +290,33 @@
   .cancel-btn:hover {
     background: #545b62 !important;
     box-shadow: 0 3px 8px rgba(108, 117, 125, 0.25) !important;
+  }
+
+  #comments-container > p.text-muted {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px 20px;
+    font-size: 1.05rem;
+  }
+
+  .comment-save-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #ccc;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.3s;
+  }
+
+  .comment-save-btn:hover {
+    color: #ffb300;
+  }
+
+  .comment-save-btn.saved {
+    color: #ffc107;
   }
 </style>
 
@@ -344,9 +415,7 @@
   }
 
   function deleteComment(commentId) {
-    if (!confirm("Estàs segur que vols esborrar aquest comentari i totes les respostes?")) {
-      return;
-    }
+    if (!confirm("Estàs segur que vols esborrar aquest comentari i totes les respostes?")) return;
 
     fetch(`/blog/comments/${commentId}/delete/`, {
       method: "POST",
@@ -355,15 +424,15 @@
         "X-Requested-With": "XMLHttpRequest"
       }
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          document.getElementById(`comment-${commentId}`)?.remove();
-        } else {
-          alert("No s'ha pogut esborrar el comentari.");
-        }
-      })
-      .catch(() => alert("Error en esborrar el comentari."));
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById(`comment-${commentId}`)?.remove();
+      } else {
+        alert("No s'ha pogut esborrar el comentari.");
+      }
+    })
+    .catch(() => alert("Error en esborrar el comentari."));
   }
 
   function showReplyForm(commentId) {
