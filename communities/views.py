@@ -44,7 +44,7 @@ def community_list(request):
     if filter_mode == 'subscrit':
         communities = [c for c in communities if user in c.subscribers.all()]
     elif filter_mode == 'local':
-        communities = [c for c in communities if user not in c.subscribers.all()]
+        communities = [c for c in communities if user not in c.subscribers.all()]  # noqa: E501
 
     community_data = []
     for c in communities:
