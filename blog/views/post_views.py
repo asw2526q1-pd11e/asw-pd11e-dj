@@ -37,9 +37,8 @@ def post_list(request):
     elif order == "antic":
         posts = Post.objects.all().order_by("published_date")
     elif order == "mes_comentaris":
-        posts = Post.objects.annotate(
-            num_comments=Count('comments') 
-        ).order_by("-num_comments")
+        posts = Post.objects.annotate(num_comments=Count(
+            'comments')).order_by("-num_comments")
     elif order == "mes_vots":
         posts = Post.objects.all().order_by("-votes")
     else:
@@ -49,7 +48,7 @@ def post_list(request):
     for post in posts:
         user_vote = 0
         if request.user.is_authenticated:
-            vote_obj = VotePost.objects.filter(user=request.user, 
+            vote_obj = VotePost.objects.filter(user=request.user,
                                                post=post).first()
             if vote_obj:
                 user_vote = vote_obj.vote
