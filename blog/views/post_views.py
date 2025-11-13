@@ -147,12 +147,13 @@ def comment_downvote(request, comment_id):
 
 # ------------------- COMMENTS TREE Y CREACIÓN ------------------- #
 
-def get_comments_tree(post_id, user=None):
+def get_comments_tree(post_id, user=None, order="top"):
     def build_tree(comment):
         user_vote = 0
         if user and user.is_authenticated:
-            vote_obj = VoteComment.objects.filter(user=user,
-                                                  comment=comment).first()
+            vote_obj = VoteComment.objects.filter(
+                user=user,
+                comment=comment).first()
             user_vote = vote_obj.vote if vote_obj else 0
         return {
             "id": comment.id,
@@ -162,17 +163,41 @@ def get_comments_tree(post_id, user=None):
             "votes": comment.votes,
             "image": comment.image.url if comment.image else None,
             "user_vote": user_vote,
-            "replies": [build_tree(reply) for reply in comment.replies.all()],
+            "replies": sorted(
+                [build_tree(reply) for reply in comment.replies.all()],
+                key=lambda x: (
+                    -x["votes"] if order == "top"
+                    else x["published_date"] if order == "old"
+                    else -x["published_date"].timestamp()
+                )
+            ),
         }
 
-    root_comments = Comment.objects.filter(post_id=post_id,
-                                           parent__isnull=True)
+    # Define order for root comments
+    if order == "top":
+        root_comments = Comment.objects.filter(
+            post_id=post_id,
+            parent__isnull=True).order_by(
+                "-votes",
+                "-published_date")
+    elif order == "old":
+        root_comments = Comment.objects.filter(
+            post_id=post_id,
+            parent__isnull=True).order_by(
+                "published_date")
+    else:  # "new"
+        root_comments = Comment.objects.filter(
+            post_id=post_id,
+            parent__isnull=True).order_by(
+                "-published_date")
+
     return [build_tree(c) for c in root_comments]
 
 
 def comments_index(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    comments_data = get_comments_tree(post.id, request.user)
+    order = request.GET.get("order", "top")  # 'top', 'new', or 'old'
+    comments_data = get_comments_tree(post.id, request.user, order)
     return JsonResponse(comments_data, safe=False)
 
 
