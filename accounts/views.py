@@ -34,7 +34,7 @@ def profile_view(request, username=None):
 @login_required
 def settings_view(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
-    form = ProfileForm(instance=profile)  # <-- form siempre definido por defecto
+    form = ProfileForm(instance=profile)
 
     if request.method == "POST":
         if 'generate_api_key' in request.POST:
