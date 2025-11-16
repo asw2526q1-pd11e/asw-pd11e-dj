@@ -36,6 +36,9 @@ urlpatterns = [
     path("blog/", include(("blog.urls", "blog"), namespace="blog")),
     path("communities/", include(("communities.urls",
                                   "communities"), namespace="communities")),
+
+    # URLs de la API
+    path('api/', include('blog.api_urls', namespace='blog_api')),
 ]
 
 # configuración de archivos estáticos y media en modo DEBUG
