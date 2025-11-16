@@ -19,3 +19,7 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    def generate_api_key(self):
+        self.api_key = uuid.uuid4()
+        self.save()
