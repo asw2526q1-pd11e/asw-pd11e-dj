@@ -3,8 +3,8 @@
 Django settings for asw_pd11e_dj project.
 """
 import os
-
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured  # <-- afegit
 
 # -----------------------
 # Base Settings
@@ -116,52 +116,55 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # -----------------------
-# AWS S3 Settings for Media
+# AWS S3 Settings for Media (Optional)
 # -----------------------
-# -------------------------------
-# Media Files (S3)
-# -------------------------------
-# Require these environment variables:
-# AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN
+USE_AWS = os.environ.get("USE_AWS", "false").lower() == "true"
 
+if USE_AWS:
+    def get_env_variable(var_name):
+        try:
+            return os.environ[var_name]
+        except KeyError:
+            raise ImproperlyConfigured(f"Set the {var_name} environment variable.")
 
-def get_env_variable(var_name):
-    try:
-        return os.environ[var_name]
-    except KeyError:
-        raise ImproperlyConfigured(f"Set the {var_name} environment variable.")
+    AWS_ACCESS_KEY_ID = get_env_variable("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = get_env_variable("AWS_SECRET_ACCESS_KEY")
+    AWS_SESSION_TOKEN = os.environ.get("AWS_SESSION_TOKEN", None)
+    AWS_STORAGE_BUCKET_NAME = "asw-pd11e-dj"
+    AWS_S3_REGION_NAME = "us-east-1"
 
-
-AWS_ACCESS_KEY_ID = get_env_variable("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = get_env_variable("AWS_SECRET_ACCESS_KEY")
-AWS_SESSION_TOKEN = get_env_variable("AWS_SESSION_TOKEN")
-AWS_STORAGE_BUCKET_NAME = "asw-pd11e-dj"
-AWS_S3_REGION_NAME = "us-east-1"
-
-STORAGES = {
-    "default": {  # Media files
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        "OPTIONS": {
-            "bucket_name": AWS_STORAGE_BUCKET_NAME,
-            "region_name": AWS_S3_REGION_NAME,
+    STORAGES = {
+        "default": {  # Media files
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "bucket_name": AWS_STORAGE_BUCKET_NAME,
+                "region_name": AWS_S3_REGION_NAME,
+            },
         },
-    },
-    "staticfiles": {  # Keep static files local
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-    },
-}
+        "staticfiles": {  # Keep static files local
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 
-MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"
+    MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/"
+else:
+    # Local media
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "media"
+    STORAGES = {
+        "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+        "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+    }
 
 # -----------------------
 # Auth / Allauth
 # -----------------------
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'APP': {
-            'client_id': "392869001985-s2nnjrdrt2kv36hirrchk73t17gd84tu.apps.googleusercontent.com",
-            'secret': "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",
-            'key': ''
+    "google": {
+        "APP": {
+            "client_id": "392869001985-s2nnjrdrt2kv36hirrchk73t17gd84tu.apps.googleusercontent.com",
+            "secret": "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",
+            "key": "",
         }
     }
 }
