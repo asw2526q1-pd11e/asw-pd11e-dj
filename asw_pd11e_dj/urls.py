@@ -20,6 +20,19 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Blog API",
+      default_version='v1',
+      description="Documentació API del Blog",
+   ),
+   public=True,
+   permission_classes=[permissions.AllowAny],
+)
 
 
 # función para redirigir la raíz al listado de posts en el namespace 'blog'
@@ -36,6 +49,17 @@ urlpatterns = [
     path("blog/", include(("blog.urls", "blog"), namespace="blog")),
     path("communities/", include(("communities.urls",
                                   "communities"), namespace="communities")),
+
+    # URLs de la API
+    path('api/', include('blog.api_urls', namespace='blog_api')),
+
+    # Documentación de la API
+    path('swagger/', schema_view.with_ui(
+        'swagger',
+        cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui(
+        'redoc',
+        cache_timeout=0), name='schema-redoc'),
 ]
 
 # configuración de archivos estáticos y media en modo DEBUG
