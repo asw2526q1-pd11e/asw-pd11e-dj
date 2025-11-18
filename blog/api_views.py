@@ -6,10 +6,17 @@ from rest_framework import serializers
 from drf_yasg.utils import swagger_auto_schema
 
 # -------------------- SERIALIZER --------------------
+
+
 class PostSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(help_text="Títol del post, màxim 200 caràcters")
+    title = serializers.CharField(
+        help_text="Títol del post, màxim 200 caràcters"
+        )
     content = serializers.CharField(help_text="Contingut complet del post")
-    author = serializers.CharField(source="author.username", help_text="Nom d'usuari de l'autor")
+    author = serializers.CharField(
+        source="author.username",
+        help_text="Nom d'usuari de l'autor"
+        )
     published_date = serializers.DateTimeField(help_text="Data de publicació")
     votes = serializers.IntegerField(help_text="Número de vots del post")
     url = serializers.CharField(help_text="URL absoluta del post")
