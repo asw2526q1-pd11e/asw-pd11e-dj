@@ -5,6 +5,7 @@ from .models import Post
 from rest_framework import serializers
 from drf_yasg.utils import swagger_auto_schema
 from .models import Comment
+from drf_yasg import openapi
 
 
 # -------------------- SERIALIZER --------------------
@@ -159,3 +160,56 @@ def post_comments_root(request, pk):
     for c in serializer.data:
         c['replies'] = []
     return Response(serializer.data)
+
+
+query_param = openapi.Parameter(
+    'q', openapi.IN_QUERY,
+    description="Text a cercar",
+    type=openapi.TYPE_STRING,
+    required=True
+)
+type_param = openapi.Parameter(
+    'type', openapi.IN_QUERY,
+    description="Tipus de cerca: posts | comments | both (per defecte: both)",
+    type=openapi.TYPE_STRING,
+    required=False,
+    default='both'
+)
+
+
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[query_param, type_param],
+    operation_description="Cerca posts i/o comentaris pel text indicat.",
+    responses={200: 'Posts i/o comentaris trobats', 400: 'Error'}
+)
+@api_view(['GET'])
+def search_posts_comments(request):
+    """
+    GET /api/search/?q=texto&type=posts|comments|both
+    Retorna els posts i/o comentaris que coincideixin amb el text.
+    """
+    query = request.GET.get('q', '').strip()
+    search_type = request.GET.get('type', 'both').lower()
+
+    if not query:
+        return Response({"error": "Cal especificar el paràmetre q"},
+                        status=400)
+
+    result = {}
+    if search_type in ['posts', 'both']:
+        posts = Post.objects.filter(
+            title__icontains=query
+            ).order_by('-published_date')
+        result['posts'] = PostSerializer(posts, many=True).data
+    if search_type in ['comments', 'both']:
+        comments = Comment.objects.filter(
+            content__icontains=query
+            ).order_by('-published_date')
+        result['comments'] = CommentSerializer(comments, many=True).data
+
+    return Response({
+        "query": query,
+        "type": search_type,
+        **result
+    })
