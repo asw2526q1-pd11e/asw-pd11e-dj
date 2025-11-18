@@ -27,11 +27,12 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'title', 'content', 'author', 'published_date', 'votes', 'url', 'communities']
+        ref_name = "PostSerializerWithCommunities"
 
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source="author.username", help_text="Nom d'usuari de l'autor del comentari")
-    image = serializers.ImageField(help_text="URL de la imatge del comentari, si existeix")
+    image = serializers.ImageField(help_text="URL de la imatge del comentari, si existeix", allow_null=True)
 
     class Meta:
         model = Comment
@@ -39,9 +40,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CommentTreeSerializer(serializers.ModelSerializer):
-    author = serializers.CharField(source="author.username")
-    image = serializers.ImageField(allow_null=True)
-    replies = serializers.SerializerMethodField()
+    author = serializers.CharField(source="author.username", help_text="Nom d'usuari de l'autor del comentari")
+    image = serializers.ImageField(allow_null=True, help_text="URL de la imatge del comentari, si existeix")
+    replies = serializers.SerializerMethodField(help_text="Llista de respostes (comentaris fills) en estructura recursiva")
 
     class Meta:
         model = Comment
@@ -53,95 +54,100 @@ class CommentTreeSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
-# -------------------- RESPONSES --------------------
-
-responses_200 = {200: 'OK'}
-responses_post_detail = {
-    200: PostSerializer,
-    404: 'Not Found - post no trobat',
-}
-responses_post_comments = {
-    200: CommentSerializer(many=True),
-    404: 'Not Found - post no trobat',
-}
-responses_post_comments_tree = {
-    200: CommentTreeSerializer(many=True),
-    404: 'Not Found - post no trobat',
-}
-responses_post_comments_root = {
-    200: CommentTreeSerializer(many=True),
-    404: 'Not Found - post no trobat',
-}
-responses_search = {
-    200: 'Posts i/o comentaris trobats',
-    400: 'Bad Request - cal paràmetre q',
-}
-
-
 # -------------------- VISTES --------------------
 
-# Llista de tots els posts
 @swagger_auto_schema(
     method='get',
     operation_description="Retorna la llista de tots els posts amb les seves comunitats",
-    responses=responses_200
+    responses={
+        200: PostSerializer(many=True),
+        500: 'Error intern del servidor'
+    }
 )
 @api_view(['GET'])
 def post_list(request):
+    """
+    GET /api/posts/
+    Retorna tots els posts amb informació de les comunitats a les quals pertanyen.
+    """
     posts = Post.objects.prefetch_related('communities').all()
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
 
-# Detall d'un post concret
 @swagger_auto_schema(
     method='get',
-    operation_description="Retorna un post concret amb totes les seves dades i comunitats. Retorna 404 si no existeix.",
-    responses=responses_post_detail
+    operation_description="Retorna un post concret amb totes les seves dades i comunitats",
+    responses={
+        200: PostSerializer,
+        404: 'Not Found - post no trobat'
+    }
 )
 @api_view(['GET'])
 def post_detail(request, pk):
+    """
+    GET /api/posts/{id}/
+    Retorna la informació detallada d'un post concret.
+    """
     post = get_object_or_404(Post.objects.prefetch_related('communities'), pk=pk)
     serializer = PostSerializer(post)
     return Response(serializer.data)
 
 
-# Tots els comentaris d'un post
 @swagger_auto_schema(
     method='get',
-    operation_description="Retorna tots els comentaris d'un post concret.",
-    responses=responses_post_comments
+    operation_description="Retorna tots els comentaris d'un post concret ordenats per data de publicació",
+    responses={
+        200: CommentSerializer(many=True),
+        404: 'Not Found - post no trobat'
+    }
 )
 @api_view(['GET'])
 def post_comments(request, pk):
+    """
+    GET /api/posts/{id}/comments/
+    Retorna tots els comentaris (plana sense jerarquia) d'un post.
+    """
     post = get_object_or_404(Post, pk=pk)
     comments = Comment.objects.filter(post=post).order_by('published_date')
     serializer = CommentSerializer(comments, many=True)
     return Response(serializer.data)
 
 
-# Comentaris en arbre
 @swagger_auto_schema(
     method='get',
-    operation_description="Retorna els comentaris d'un post amb l'estructura en arbre (fills dins de replies).",
-    responses=responses_post_comments_tree
+    operation_description="Retorna els comentaris d'un post amb estructura jeràrquica en arbre (fills dins de 'replies')",
+    responses={
+        200: CommentTreeSerializer(many=True),
+        404: 'Not Found - post no trobat'
+    }
 )
 @api_view(['GET'])
 def post_comments_tree(request, pk):
+    """
+    GET /api/posts/{id}/comments/tree/
+    Retorna els comentaris en estructura d'arbre amb tots els nivells de respostes.
+    """
     post = get_object_or_404(Post, pk=pk)
     root_comments = Comment.objects.filter(post=post, parent__isnull=True).order_by('published_date')
     serializer = CommentTreeSerializer(root_comments, many=True)
     return Response(serializer.data)
 
 
-# Comentaris només de primer nivell
 @swagger_auto_schema(
     method='get',
-    operation_description="Retorna només els comentaris de primer nivell d'un post.",
-    responses=responses_post_comments_root
+    operation_description="Retorna només els comentaris de primer nivell d'un post (sense respostes)",
+    responses={
+        200: CommentTreeSerializer(many=True),
+        404: 'Not Found - post no trobat'
+    }
 )
 @api_view(['GET'])
 def post_comments_root(request, pk):
+    """
+    GET /api/posts/{id}/comments/root/
+    Retorna només els comentaris pare (primer nivell) sense incloure les respostes.
+    """
     post = get_object_or_404(Post, pk=pk)
     root_comments = Comment.objects.filter(post=post, parent__isnull=True).order_by('published_date')
     serializer = CommentTreeSerializer(root_comments, many=True)
@@ -150,34 +156,55 @@ def post_comments_root(request, pk):
     return Response(serializer.data)
 
 
-# Cerca posts i comentaris
+# Paràmetres per la cerca
 query_param = openapi.Parameter(
     'q', openapi.IN_QUERY,
-    description="Text a cercar",
+    description="Text a cercar en títols de posts o contingut de comentaris",
     type=openapi.TYPE_STRING,
     required=True
 )
 type_param = openapi.Parameter(
     'type', openapi.IN_QUERY,
-    description="Tipus de cerca: posts | comments | both (per defecte: both)",
+    description="Tipus de cerca: 'posts' (només posts), 'comments' (només comentaris), o 'both' (ambdós)",
     type=openapi.TYPE_STRING,
     required=False,
-    default='both'
+    default='both',
+    enum=['posts', 'comments', 'both']
 )
 
 @swagger_auto_schema(
     method='get',
     manual_parameters=[query_param, type_param],
-    operation_description="Cerca posts i/o comentaris pel text indicat.",
-    responses=responses_search
+    operation_description="Cerca posts i/o comentaris pel text indicat. Retorna resultats ordenats per data de publicació (més recents primer)",
+    responses={
+        200: openapi.Response(
+            description="Posts i/o comentaris trobats",
+            examples={
+                'application/json': {
+                    "query": "exemple",
+                    "type": "both",
+                    "posts": [],
+                    "comments": []
+                }
+            }
+        ),
+        400: 'Bad Request - cal especificar el paràmetre q'
+    }
 )
 @api_view(['GET'])
 def search_posts_comments(request):
+    """
+    GET /api/search/?q=text&type=both
+    Cerca posts per títol i comentaris per contingut.
+    """
     query = request.GET.get('q', '').strip()
     search_type = request.GET.get('type', 'both').lower()
 
     if not query:
         return Response({"error": "Cal especificar el paràmetre q"}, status=400)
+
+    if search_type not in ['posts', 'comments', 'both']:
+        return Response({"error": "El paràmetre type ha de ser 'posts', 'comments' o 'both'"}, status=400)
 
     result = {}
     if search_type in ['posts', 'both']:

@@ -9,5 +9,10 @@ urlpatterns = [
         'communities/<int:pk>/',
         api_views.community_detail_api,
         name='community_detail'
-        ),
+    ),
+    path(
+        'communities/<int:pk>/posts/',
+        api_views.community_posts_api,
+        name='community_posts'
+    ),
 ]
