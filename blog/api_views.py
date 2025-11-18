@@ -6,6 +6,7 @@ from .models import Post, Comment
 from rest_framework import serializers
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from communities.api_views import CommunitySerializer
 
 # -------------------- SERIALIZERS --------------------
 
@@ -17,10 +18,15 @@ class PostSerializer(serializers.ModelSerializer):
     published_date = serializers.DateTimeField(help_text="Data de publicació")
     votes = serializers.IntegerField(help_text="Número de vots del post")
     url = serializers.CharField(help_text="URL absoluta del post")
+    communities = CommunitySerializer(
+        many=True,
+        read_only=True,
+        help_text="Llista de comunitats a les quals pertany el post"
+    )
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'author', 'published_date', 'votes', 'url']
+        fields = ['id', 'title', 'content', 'author', 'published_date', 'votes', 'url', 'communities']
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -77,12 +83,12 @@ responses_search = {
 # Llista de tots els posts
 @swagger_auto_schema(
     method='get',
-    operation_description="Retorna la llista de tots els posts",
+    operation_description="Retorna la llista de tots els posts amb les seves comunitats",
     responses=responses_200
 )
 @api_view(['GET'])
 def post_list(request):
-    posts = Post.objects.all()
+    posts = Post.objects.prefetch_related('communities').all()
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
@@ -90,12 +96,12 @@ def post_list(request):
 # Detall d'un post concret
 @swagger_auto_schema(
     method='get',
-    operation_description="Retorna un post concret amb totes les seves dades. Retorna 404 si no existeix.",
+    operation_description="Retorna un post concret amb totes les seves dades i comunitats. Retorna 404 si no existeix.",
     responses=responses_post_detail
 )
 @api_view(['GET'])
 def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+    post = get_object_or_404(Post.objects.prefetch_related('communities'), pk=pk)
     serializer = PostSerializer(post)
     return Response(serializer.data)
 
@@ -175,7 +181,7 @@ def search_posts_comments(request):
 
     result = {}
     if search_type in ['posts', 'both']:
-        posts = Post.objects.filter(title__icontains=query).order_by('-published_date')
+        posts = Post.objects.prefetch_related('communities').filter(title__icontains=query).order_by('-published_date')
         result['posts'] = PostSerializer(posts, many=True).data
     if search_type in ['comments', 'both']:
         comments = Comment.objects.filter(content__icontains=query).order_by('-published_date')
