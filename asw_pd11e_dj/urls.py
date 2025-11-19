@@ -51,7 +51,10 @@ urlpatterns = [
                                   "communities"), namespace="communities")),
 
     # URLs de la API
-    path('api/', include('blog.api_urls', namespace='blog_api')),
+    path('api/blog/', include('blog.api_urls', namespace='blog_api')),
+    path('api/communities/',
+         include('communities.api_urls',
+                 namespace='communities_api')),
 
     # Documentación de la API
     path('swagger/', schema_view.with_ui(
