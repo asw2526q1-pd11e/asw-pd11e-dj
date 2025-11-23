@@ -4,9 +4,12 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_yasg.utils import swagger_auto_schema
+
 from accounts.models import Profile
-from .serializers import ProfileSerializer
 from accounts.authentication import APIKeyAuthentication
+from .serializers import ProfileSerializer
+from blog.models import Post, Comment
+from blog.serializers import PostSerializer, CommentSerializer
 
 
 class MeAPIView(APIView):
@@ -35,3 +38,30 @@ class MeAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class MyPostsAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        posts = Post.objects.filter(author=request.user)
+        if not posts.exists():
+            return Response({"detail": "Este usuario no ha "
+                                       "publicado nada."},
+                            status=status.HTTP_200_OK)
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
+
+
+class MyCommentsAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        comments = Comment.objects.filter(author=request.user)
+        if not comments.exists():
+            return Response({"detail": "Este usuario no ha comentado nada."},
+                            status=status.HTTP_200_OK)
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
