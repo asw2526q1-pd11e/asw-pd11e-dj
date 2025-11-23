@@ -11,7 +11,7 @@ class APIKeyAuthentication(BaseAuthentication):
         api_key = request.headers.get('X-API-Key')
 
         if not api_key:
-            return None  # no hi ha header → prova altres autenticacions
+            return None
 
         try:
             profile = Profile.objects.select_related('user'
@@ -19,5 +19,4 @@ class APIKeyAuthentication(BaseAuthentication):
         except Profile.DoesNotExist:
             raise AuthenticationFailed("API Key no vàlida")
 
-        # Torna un tuple (usuari, auth info)
         return (profile.user, None)
