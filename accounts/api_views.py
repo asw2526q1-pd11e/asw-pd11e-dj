@@ -9,7 +9,8 @@ from accounts.models import Profile
 from accounts.authentication import APIKeyAuthentication
 from .serializers import ProfileSerializer
 from blog.models import Post, Comment
-from blog.serializers import PostSerializer, CommentSerializer, SavedPostSerializer
+from blog.serializers import (PostSerializer,
+                              CommentSerializer, SavedPostSerializer)
 
 
 class MeAPIView(APIView):
@@ -65,6 +66,7 @@ class MyCommentsAPIView(APIView):
                             status=status.HTTP_200_OK)
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data)
+
 
 class MySavedPostsAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]

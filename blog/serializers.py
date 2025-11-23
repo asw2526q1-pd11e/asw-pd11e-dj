@@ -41,11 +41,14 @@ class PostSerializer(serializers.ModelSerializer):
             return obj.image.url
         return None
 
+
 class SavedPostSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source='author.username', read_only=True)
-    author_bio = serializers.CharField(source='author.profile.bio',
-                                       default='Este usuario no ha comentado nada.',
-                                       read_only=True)
+    author_name = (serializers.CharField
+                   (source='author.username', read_only=True))
+    author_bio = (serializers.CharField
+                  (source='author.profile.bio',
+                   default='Este usuario no ha comentado nada.',
+                   read_only=True))
     communities = serializers.StringRelatedField(many=True)
     image_url = serializers.SerializerMethodField()
 
