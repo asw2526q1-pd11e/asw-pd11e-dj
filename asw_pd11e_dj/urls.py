@@ -25,13 +25,13 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="Blog API",
-      default_version='v1',
-      description="Documentació API del Blog",
-   ),
-   public=True,
-   permission_classes=[permissions.AllowAny],
+    openapi.Info(
+        title="Blog API",
+        default_version='v1',
+        description="Documentació API del Blog",
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
 )
 
 
@@ -49,6 +49,9 @@ urlpatterns = [
     path("blog/", include(("blog.urls", "blog"), namespace="blog")),
     path("communities/", include(("communities.urls",
                                   "communities"), namespace="communities")),
+    path("api/accounts/", include(("accounts.api_urls",
+                                   "accounts_api"), namespace="accounts_api")),
+
 
     # URLs de la API
     path('api/blog/', include('blog.api_urls', namespace='blog_api')),
