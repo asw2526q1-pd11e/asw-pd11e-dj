@@ -9,7 +9,7 @@ from accounts.models import Profile
 from accounts.authentication import APIKeyAuthentication
 from .serializers import ProfileSerializer
 from blog.models import Post, Comment
-from blog.serializers import PostSerializer, CommentSerializer
+from blog.serializers import PostSerializer, CommentSerializer, SavedPostSerializer
 
 
 class MeAPIView(APIView):
@@ -64,4 +64,33 @@ class MyCommentsAPIView(APIView):
             return Response({"detail": "Este usuario no ha comentado nada."},
                             status=status.HTTP_200_OK)
         serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+class MySavedPostsAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        saved_posts = request.user.profile.saved_posts.all()
+
+        if not saved_posts.exists():
+            return Response({"detail": "No hay posts guardados."},
+                            status=status.HTTP_200_OK)
+
+        serializer = SavedPostSerializer(saved_posts, many=True)
+        return Response(serializer.data)
+
+
+class MySavedCommentsAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profile = request.user.profile
+        saved_comments = profile.saved_comments.all()
+
+        if not saved_comments.exists():
+            return Response({"detail": "No hay comentarios guardados."})
+
+        serializer = CommentSerializer(saved_comments, many=True)
         return Response(serializer.data)
