@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from accounts.models import Profile
 
+
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
 
-    nombre = serializers.CharField(required=False, allow_blank=True, default="")
+    nombre = serializers.CharField(required=False,
+                                   allow_blank=True, default="")
     bio = serializers.CharField(required=False, allow_blank=True, default="")
     avatar = serializers.ImageField(required=False, allow_null=True)
     banner = serializers.ImageField(required=False, allow_null=True)

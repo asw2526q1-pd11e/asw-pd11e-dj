@@ -8,6 +8,7 @@ from accounts.models import Profile
 from .serializers import ProfileSerializer
 from accounts.authentication import APIKeyAuthentication
 
+
 class MeAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
@@ -29,7 +30,8 @@ class MeAPIView(APIView):
     )
     def put(self, request):
         profile = self.get_object(request.user)
-        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+        serializer = ProfileSerializer(profile,
+                                       data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
