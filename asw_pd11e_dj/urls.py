@@ -49,6 +49,9 @@ urlpatterns = [
     path("blog/", include(("blog.urls", "blog"), namespace="blog")),
     path("communities/", include(("communities.urls",
                                   "communities"), namespace="communities")),
+    path("api/accounts/", include(("accounts.api_urls",
+                                   "accounts_api"), namespace="accounts_api")),
+
 
     # URLs de la API
     path('api/blog/', include('blog.api_urls', namespace='blog_api')),
