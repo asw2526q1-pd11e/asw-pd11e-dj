@@ -39,6 +39,16 @@ INSTALLED_APPS = [
 
 SITE_ID = 1
 
+
+# -----------------------
+# REST Framework Configuration
+# -----------------------
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'accounts.authentication.APIKeyAuthentication',
+    ]
+}
+
 # -----------------------
 # Middleware
 # -----------------------
@@ -53,6 +63,18 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'API Key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'X-API-Key',
+        }
+    },
+    'USE_SESSION_AUTH': False,  # molt important -> treu el login d'usuari/password
+}
 
 # -----------------------
 # URLs and Templates
