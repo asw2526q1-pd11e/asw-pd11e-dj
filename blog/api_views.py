@@ -2,11 +2,14 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Post, Comment
+from .models import Post, Comment, VoteComment, VotePost
 from rest_framework import serializers
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from communities.api_views import CommunitySerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from accounts.authentication import APIKeyAuthentication
 
 # -------------------- SERIALIZERS --------------------
 
@@ -215,3 +218,89 @@ def search_posts_comments(request):
         result['comments'] = CommentSerializer(comments, many=True).data
 
     return Response({"query": query, "type": search_type, **result})
+
+
+
+class UpvotePostAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(responses={200: "Número de vots actual del post"})
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        vote_obj, _ = VotePost.objects.get_or_create(user=request.user, post=post)
+
+        if vote_obj.vote != 1:
+            if vote_obj.vote == -1:
+                post.votes += 2
+            else:
+                post.votes += 1
+            vote_obj.vote = 1
+            vote_obj.save()
+            post.save()
+
+        return Response({"votes": post.votes})
+
+
+class DownvotePostAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(responses={200: "Número de vots actual del post"})
+    def post(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        vote_obj, _ = VotePost.objects.get_or_create(user=request.user, post=post)
+
+        if vote_obj.vote != -1:
+            if vote_obj.vote == 1:
+                post.votes -= 2
+            else:
+                post.votes -= 1
+            vote_obj.vote = -1
+            vote_obj.save()
+            post.save()
+
+        return Response({"votes": post.votes})
+
+
+
+class UpvoteCommentAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(responses={200: "Número de vots actual del comentari"})
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+        vote_obj, _ = VoteComment.objects.get_or_create(user=request.user, comment=comment)
+
+        if vote_obj.vote != 1:
+            if vote_obj.vote == -1:
+                comment.votes += 2
+            else:
+                comment.votes += 1
+            vote_obj.vote = 1
+            vote_obj.save()
+            comment.save()
+
+        return Response({"votes": comment.votes})
+
+
+class DownvoteCommentAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(responses={200: "Número de vots actual del comentari"})
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+        vote_obj, _ = VoteComment.objects.get_or_create(user=request.user, comment=comment)
+
+        if vote_obj.vote != -1:
+            if vote_obj.vote == 1:
+                comment.votes -= 2
+            else:
+                comment.votes -= 1
+            vote_obj.vote = -1
+            vote_obj.save()
+            comment.save()
+
+        return Response({"votes": comment.votes})
