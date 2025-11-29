@@ -11,6 +11,7 @@ from .serializers import ProfileSerializer
 from blog.models import Post, Comment
 from blog.serializers import (PostSerializer,
                               CommentSerializer, SavedPostSerializer)
+from django.shortcuts import get_object_or_404
 
 
 class MeAPIView(APIView):
@@ -96,3 +97,39 @@ class MySavedCommentsAPIView(APIView):
 
         serializer = CommentSerializer(saved_comments, many=True)
         return Response(serializer.data)
+
+
+class ToggleSavedPostAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, pk=post_id)
+        profile = request.user.profile
+
+        if post in profile.saved_posts.all():
+            profile.saved_posts.remove(post)
+            saved = False
+        else:
+            profile.saved_posts.add(post)
+            saved = True
+
+        return Response({"saved": saved})
+
+
+class ToggleSavedCommentAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+        profile = request.user.profile
+
+        if comment in profile.saved_comments.all():
+            profile.saved_comments.remove(comment)
+            saved = False
+        else:
+            profile.saved_comments.add(comment)
+            saved = True
+
+        return Response({"saved": saved})
