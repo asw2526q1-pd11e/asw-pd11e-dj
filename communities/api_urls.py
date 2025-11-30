@@ -15,4 +15,7 @@ urlpatterns = [
         api_views.community_posts_api,
         name='community_posts'
     ),
+    path('api/communities/create/',
+         api_views.CommunityCreateAPIView.as_view(),
+         name='community-create'),
 ]
