@@ -18,6 +18,7 @@ from .serializers import (
     CommentSerializer,
     CommentTreeSerializer,
     PostUpdateSerializer,
+    PostDeleteSerializer,
 )
 
 # -------------------- POST VIEWS --------------------
@@ -129,6 +130,30 @@ class PostEditAPIView(generics.GenericAPIView):
         serializer.save()
         output_serializer = PostSerializer(post)
         return Response(output_serializer.data)
+
+
+class DeletePostAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        responses={
+            204: PostDeleteSerializer,
+            404: "Post no trobat",
+            401: "No autenticat"
+        },
+        operation_description="Elimina un post concret (només l'autor pot eliminar-lo)",
+        tags=['Posts']
+    )
+
+    def delete(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+
+        if post.author != request.user:
+            return Response({"detail": "No tens permís per eliminar aquest post."}, status=403)
+
+        post.delete()
+        return Response(status=204)
 
 
 class UpvotePostAPIView(APIView):
