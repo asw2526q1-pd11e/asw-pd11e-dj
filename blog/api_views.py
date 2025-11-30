@@ -108,24 +108,13 @@ class PostCreateAPIView(generics.CreateAPIView):
 
 
 class PostEditAPIView(generics.GenericAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostUpdateSerializer
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+    queryset = Post.objects.none()
 
     def get_object(self, pk):
         return get_object_or_404(Post, pk=pk)
-
-    @swagger_auto_schema(
-        responses={200: PostUpdateSerializer},
-        operation_description="Mostra els valors actuals del post per editar",
-        tags=['Posts']
-    )
-    def get(self, request, pk):
-        post = self.get_object(pk)
-        serializer = PostUpdateSerializer(post)
-        return Response(serializer.data)
 
     @swagger_auto_schema(
         request_body=PostUpdateSerializer,
@@ -140,6 +129,7 @@ class PostEditAPIView(generics.GenericAPIView):
         serializer.save()
         output_serializer = PostSerializer(post)
         return Response(output_serializer.data)
+
 
 class UpvotePostAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
