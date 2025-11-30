@@ -63,49 +63,36 @@ def post_detail(request, pk):
     return Response(serializer.data)
 
 
-class PostCreateAPIView(generics.CreateAPIView):
-    """
-    API endpoint per crear un post nou.
-    Omple els camps del formulari per crear el teu post.
-    """
+class PostCreateAPIView(generics.GenericAPIView):
     serializer_class = PostCreateSerializer
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
+        request_body=PostCreateSerializer,
+        responses={200: PostSerializer},
         operation_description="""
         Crea un post nou amb els següents camps:
-        - **title**: Títol del post (obligatori, màxim 200 caràcters)
-        - **content**: Contingut del post (obligatori)
-        - **url**: Enllaç d'interès (opcional)
-        - **image**: Fitxer d'imatge (opcional)
-        - **communities**: IDs de les comunitats (opcional, pots seleccionar múltiples)
+        - title: Títol del post (obligatori)
+        - content: Contingut del post (obligatori)
+        - url: Enllaç d'interès (opcional)
+        - image: Fitxer d'imatge (opcional)
+        - communities: IDs de les comunitats (opcional)
         """,
-        request_body=PostCreateSerializer,
-        responses={
-            201: openapi.Response(
-                description="Post creat correctament",
-                schema=PostSerializer
-            ),
-            400: "Dades invàlides",
-            401: "No autenticat"
-        },
         tags=['Posts']
     )
     def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-    
-    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        
-        post = serializer.instance
+
+        # Assignem l'autor
+        post = serializer.save(author=request.user)
+
+        # Serialitzador de sortida
         output_serializer = PostSerializer(post)
         return Response(output_serializer.data, status=201)
+
 
 
 class PostEditAPIView(generics.GenericAPIView):
