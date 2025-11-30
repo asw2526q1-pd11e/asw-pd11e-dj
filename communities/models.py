@@ -18,7 +18,7 @@ def community_banner_path(instance, filename):
 
 class Community(models.Model):
     id = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=200, blank=True, null=True)
+    name = models.CharField(max_length=200, blank=True, null=True, unique=True)
     avatar = models.ImageField(upload_to=community_avatar_path,
                                blank=True, null=True)
     banner = models.ImageField(upload_to=community_banner_path,

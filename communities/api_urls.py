@@ -18,4 +18,10 @@ urlpatterns = [
     path('api/communities/create/',
          api_views.CommunityCreateAPIView.as_view(),
          name='community-create'),
+    path('api/communities/<int:pk>/subscribe/',
+         api_views.community_subscribe_api,
+         name='subscribe-community'),
+    path('api/communities/<int:pk>/unsubscribe/',
+         api_views.community_unsubscribe_api,
+         name='unsubscribe-community'),
 ]
