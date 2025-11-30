@@ -152,3 +152,8 @@ class SavedPostSerializer(serializers.ModelSerializer):
         if obj.image:
             return obj.image.url
         return None
+
+
+class PostDeleteSerializer(serializers.Serializer):
+    detail = serializers.CharField(
+        help_text="Missatge de confirmació de l'eliminació")
