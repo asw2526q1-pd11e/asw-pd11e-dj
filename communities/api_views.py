@@ -12,10 +12,9 @@ from communities.models import Community
 from drf_yasg import openapi
 from rest_framework import generics
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from rest_framework.decorators import authentication_classes, permission_classes
 
 # -------------------- SERIALIZERS --------------------
-
 
 class CommunitySerializer(serializers.ModelSerializer):
     subs_count = serializers.IntegerField(
@@ -187,7 +186,7 @@ class CommunityCreateAPIView(generics.CreateAPIView):
     serializer_class = CommunityCreateSerializer
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]   # ✅ CLAVE PARA ARCHIVOS
+    parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
         operation_description="""
@@ -250,3 +249,77 @@ class CommunityCreateAPIView(generics.CreateAPIView):
 
         output_serializer = CommunitySerializer(annotated_community)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Subscribirse a una comunidad",
+    responses={
+        200: "Suscripción realizada correctamente",
+        400: "El usuario ya está suscrito",
+        401: "No autenticado",
+        404: "Comunidad no encontrada"
+    },
+    tags=["communities"]
+)
+@api_view(['POST'])
+def community_subscribe_api(request, pk):
+    """
+    POST /api/communities/{id}/subscribe/
+    Suscribe al usuario autenticado a una comunidad.
+    """
+    if not request.user.is_authenticated:
+        return Response(
+            {"error": "Usuario no autenticado"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    community = get_object_or_404(Community, pk=pk)
+
+    if request.user in community.subscribers.all():
+        return Response(
+            {"error": "Ya estás suscrito a esta comunidad"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    community.subscribers.add(request.user)
+    return Response(
+        {"message": "Suscripción realizada correctamente"},
+        status=status.HTTP_200_OK
+    )
+
+@swagger_auto_schema(
+    method='post',
+    operation_description="Darse de baja de una comunidad",
+    responses={
+        200: "Te has dado de baja correctamente",
+        400: "El usuario no estaba suscrito",
+        401: "No autenticado",
+        404: "Comunidad no encontrada"
+    },
+    tags=["communities"]
+)
+@api_view(['POST'])
+def community_unsubscribe_api(request, pk):
+    """
+    POST /api/communities/{id}/unsubscribe/
+    elimina al usuario autenticado de la comunidad.
+    """
+    if not request.user.is_authenticated:
+        return Response(
+            {"error": "Usuario no autenticado"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+    community = get_object_or_404(Community, pk=pk)
+
+    if request.user not in community.subscribers.all():
+        return Response(
+            {"error": "No estás suscrito a esta comunidad"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    community.subscribers.remove(request.user)
+    return Response(
+        {"message": "Te has dado de baja correctamente"},
+        status=status.HTTP_200_OK
+    )
