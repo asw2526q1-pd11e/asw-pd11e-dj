@@ -5,9 +5,14 @@ from rest_framework import serializers, status
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from django.db import models
-
+from rest_framework.permissions import IsAuthenticated
+from accounts.authentication import APIKeyAuthentication
 from blog.models import Post
 from communities.models import Community
+from drf_yasg import openapi
+from rest_framework import generics
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 # -------------------- SERIALIZERS --------------------
 
@@ -62,6 +67,15 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'content', 'author', 'published_date', 'votes', 'url', 'communities']
         ref_name = "PostSerializerInCommunities"
 
+class CommunityCreateSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=200, help_text="Nom de la comunitat")
+    avatar = serializers.ImageField(required=False, allow_null=True)
+    banner = serializers.ImageField(required=False, allow_null=True)
+
+    class Meta:
+        model = Community
+        fields = ['id', 'name', 'avatar', 'banner']
+        read_only_fields = ['id']
 
 # -------------------- VIEWS --------------------
 
@@ -163,3 +177,76 @@ def community_posts_api(request, pk):
             {"error": f"Error intern del servidor: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+
+class CommunityCreateAPIView(generics.CreateAPIView):
+    """
+    API endpoint per crear una comunitat nova.
+    Permite subir avatar y banner.
+    """
+    serializer_class = CommunityCreateSerializer
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]   # ✅ CLAVE PARA ARCHIVOS
+
+    @swagger_auto_schema(
+        operation_description="""
+        Crea una comunitat nova amb:
+        - **name**: Nom de la comunitat (obligatori)
+        - **avatar**: Imatge (opcional)
+        - **banner**: Imatge (opcional)
+
+        L'usuari autenticat es converteix automàticament en el primer subscriptor.
+        """,
+        manual_parameters=[
+            openapi.Parameter(
+                'avatar',
+                openapi.IN_FORM,
+                description="Imatge d'avatar",
+                type=openapi.TYPE_FILE,
+                required=False
+            ),
+            openapi.Parameter(
+                'banner',
+                openapi.IN_FORM,
+                description="Imatge de banner",
+                type=openapi.TYPE_FILE,
+                required=False
+            )
+        ],
+        consumes=['multipart/form-data'],
+        responses={
+            201: openapi.Response(
+                description="Comunitat creada correctament",
+                schema=CommunitySerializer
+            ),
+            400: "Dades invàlides",
+            401: "No autenticat"
+        },
+        tags=['communities']
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        community = serializer.save()
+
+        if self.request.user.is_authenticated:
+            community.subscribers.add(self.request.user)
+            community.save()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
+
+        community = serializer.instance
+
+        annotated_community = Community.objects.annotate(
+            posts_count=models.Count('posts', distinct=True),
+            comments_count=models.Count('posts__comments', distinct=True)
+        ).get(pk=community.pk)
+
+        output_serializer = CommunitySerializer(annotated_community)
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
