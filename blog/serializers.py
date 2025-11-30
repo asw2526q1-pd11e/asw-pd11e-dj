@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import Post, Comment
-from communities.api_views import CommunitySerializer
 from communities.models import Community
 
 # -------------------- SERIALIZERS --------------------
@@ -20,10 +19,11 @@ class PostSerializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="URL de la imatge del post, si existeix"
     )
-    communities = CommunitySerializer(
+    communities = serializers.SlugRelatedField(
         many=True,
         read_only=True,
-        help_text="Llista de comunitats a les quals pertany el post"
+        slug_field='name',
+        help_text="Llista de noms de comunitats a les quals pertany el post"
     )
 
     class Meta:
@@ -37,15 +37,14 @@ class PostSerializer(serializers.ModelSerializer):
 class PostCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating posts via the API.
-    Handles title, content, image, URL, and communities (optional).
+    Accepts communities by their name (string) instead of ID.
     """
-    communities = serializers.PrimaryKeyRelatedField(
+    communities = serializers.SlugRelatedField(
         queryset=Community.objects.all(),
         many=True,
-        required=False,
-        help_text="Selecciona les IDs de les "
-                  "comunitats (opcional, pots "
-                  "seleccionar múltiples)"
+        required=True,
+        slug_field='name',
+        help_text="Llista de noms de comunitats (accepta més d'una comunitat)"
     )
 
     title = serializers.CharField(
@@ -76,9 +75,8 @@ class PostCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         communities_data = validated_data.pop('communities', [])
-        post = Post.objects.create(**validated_data)  # <-- no author here
-        if communities_data:
-            post.communities.set(communities_data)
+        post = Post.objects.create(**validated_data)
+        post.communities.set(communities_data)
         return post
 
 
@@ -152,3 +150,8 @@ class SavedPostSerializer(serializers.ModelSerializer):
         if obj.image:
             return obj.image.url
         return None
+
+
+class PostDeleteSerializer(serializers.Serializer):
+    detail = serializers.CharField(
+        help_text="Missatge de confirmació de l'eliminació")
