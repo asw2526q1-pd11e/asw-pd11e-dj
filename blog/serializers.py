@@ -1,54 +1,145 @@
 from rest_framework import serializers
 from .models import Post, Comment
+from communities.api_views import CommunitySerializer
+from communities.models import Community
 
-
-class CommentSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source='author.username',
-                                        read_only=True)
-    image_url = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Comment
-        fields = ['id', 'author_name', 'content',
-                  'published_date', 'votes', 'url',
-                  'image_url', 'is_root_comment', 'parent']
-
-    def get_image_url(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
+# -------------------- SERIALIZERS --------------------
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source='author.username',
-                                        read_only=True)
-    author_bio = serializers.CharField(source='author.profile.bio',
-                                       default='Este usuario '
-                                               'no ha comentado nada.',
-                                       read_only=True)
-    communities = serializers.StringRelatedField(many=True)
-    image_url = serializers.SerializerMethodField()
-    comments = CommentSerializer(many=True, read_only=True)
+    title = serializers.CharField(help_text="Títol del post, "
+                                            "màxim 200 caràcters")
+    content = serializers.CharField(help_text="Contingut "
+                                              "complet del post")
+    author = serializers.CharField(source="author.username",
+                                   help_text="Nom d'usuari de l'autor")
+    published_date = serializers.DateTimeField(help_text="Data de publicació")
+    votes = serializers.IntegerField(help_text="Número de vots del post")
+    url = serializers.CharField(help_text="URL absoluta del post")
+    image = serializers.ImageField(
+        allow_null=True,
+        help_text="URL de la imatge del post, si existeix"
+    )
+    communities = CommunitySerializer(
+        many=True,
+        read_only=True,
+        help_text="Llista de comunitats a les quals pertany el post"
+    )
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'author_name',
-                  'author_bio', 'published_date',
-                  'votes', 'image_url', 'url', 'communities', 'comments']
+        fields = ['id', 'title', 'content', 'author',
+                  'published_date', 'votes', 'url',
+                  'image', 'communities']
+        ref_name = "PostSerializerWithCommunities"
 
-    def get_image_url(self, obj):
-        if obj.image:
-            return obj.image.url
-        return None
+
+class PostCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating posts via the API.
+    Handles title, content, image, URL, and communities (optional).
+    """
+    communities = serializers.PrimaryKeyRelatedField(
+        queryset=Community.objects.all(),
+        many=True,
+        required=False,
+        help_text="Selecciona les IDs de les "
+                  "comunitats (opcional, pots "
+                  "seleccionar múltiples)"
+    )
+
+    title = serializers.CharField(
+        max_length=200,
+        help_text="Títol del post (màxim 200 caràcters)"
+    )
+
+    content = serializers.CharField(
+        help_text="Contingut complet del post",
+        style={'base_template': 'textarea.html'}
+    )
+
+    url = serializers.URLField(
+        required=False,
+        allow_blank=True,
+        help_text="Enllaç d'interès (opcional)"
+    )
+
+    image = serializers.ImageField(
+        required=False,
+        allow_null=True,
+        help_text="Imatge del post (opcional)"
+    )
+
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'image', 'url', 'communities']
+
+    def create(self, validated_data):
+        communities_data = validated_data.pop('communities', [])
+        post = Post.objects.create(**validated_data)  # <-- no author here
+        if communities_data:
+            post.communities.set(communities_data)
+        return post
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source="author.username",
+                                   help_text="Nom d'usuari de "
+                                             "l'autor del comentari")
+    image = serializers.ImageField(help_text="URL de la imatge del comentari, "
+                                             "si existeix", allow_null=True)
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'post', 'parent', 'content', 'author',
+                  'published_date', 'votes', 'url', 'image']
+
+
+class CommentTreeSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(source="author.username",
+                                   help_text="Nom d'usuari de "
+                                             "l'autor del comentari")
+    image = serializers.ImageField(allow_null=True,
+                                   help_text="URL de la imatge "
+                                             "del comentari, si existeix")
+    replies = serializers.SerializerMethodField(
+        help_text="Llista de respostes (comentaris fills) "
+                  "en estructura recursiva")
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'author',
+                  'published_date', 'votes',
+                  'image', 'replies']
+
+    def get_replies(self, obj):
+        children = obj.replies.all().order_by('published_date')
+        serializer = CommentTreeSerializer(children, many=True)
+        return serializer.data
+
+
+class PostUpdateSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False, allow_blank=True,
+                                  help_text="Títol del post (opcional)")
+    content = serializers.CharField(required=False, allow_blank=True,
+                                    help_text="Contingut del post (opcional)")
+    url = serializers.URLField(required=False, allow_blank=True,
+                               help_text="Enllaç del post (opcional)")
+    image = serializers.ImageField(required=False, allow_null=True,
+                                   help_text="Imatge del post (opcional)")
+
+    class Meta:
+        model = Post
+        fields = ['title', 'content', 'url', 'image', 'communities']
 
 
 class SavedPostSerializer(serializers.ModelSerializer):
-    author_name = (serializers.CharField
-                   (source='author.username', read_only=True))
-    author_bio = (serializers.CharField
-                  (source='author.profile.bio',
-                   default='Este usuario no ha comentado nada.',
-                   read_only=True))
+    author_name = serializers.CharField(source='author.username',
+                                        read_only=True)
+    author_bio = serializers.CharField(source='author.profile.bio',
+                                       default='Este usuario no '
+                                               'ha comentado nada.',
+                                       read_only=True)
     communities = serializers.StringRelatedField(many=True)
     image_url = serializers.SerializerMethodField()
 

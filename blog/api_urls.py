@@ -1,5 +1,10 @@
 from django.urls import path
-from .api_views import post_comments, post_comments_root, post_comments_tree, post_detail, post_list, search_posts_comments, UpvotePostAPIView, DownvotePostAPIView, UpvoteCommentAPIView, DownvoteCommentAPIView, PostCreateAPIView  # noqa E501
+from .api_views import (post_comments, post_comments_root, post_comments_tree,
+                        post_detail, post_list, search_posts_comments,
+                        UpvotePostAPIView,
+                        DownvotePostAPIView, UpvoteCommentAPIView,
+                        DownvoteCommentAPIView,
+                        PostCreateAPIView, PostEditAPIView)
 
 app_name = "blog_api"
 
@@ -12,7 +17,7 @@ urlpatterns = [
          name='post_comments_tree'),  # arbre complet
     path('api/posts/<int:pk>/comments_root/',
          post_comments_root,
-         name='post_comments_root'),  # només 1r nivell
+         name='post_comments_root'),
     path('api/search/', search_posts_comments, name='search_posts_comments'),
 
     # POSTS
@@ -22,6 +27,10 @@ urlpatterns = [
     path('api/posts/<int:pk>/downvote/',
          DownvotePostAPIView.as_view(),
          name='api_downvote_post'),
+    path('api/posts/create/',
+         PostCreateAPIView.as_view(), name='post-create'),
+    path('api/posts/<int:pk>/edit/',
+         PostEditAPIView.as_view(), name="post-edit"),
 
     # COMMENTS
     path('api/comments/<int:comment_id>/upvote/',
@@ -31,5 +40,5 @@ urlpatterns = [
          DownvoteCommentAPIView.as_view(),
          name='api_downvote_comment'
          ),
-    path('api/posts/create/', PostCreateAPIView.as_view(), name='post-create'),
+
 ]

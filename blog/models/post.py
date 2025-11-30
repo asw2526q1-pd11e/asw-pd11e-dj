@@ -42,7 +42,6 @@ class Post(models.Model):
         return reverse("blog:post_detail", args=[str(self.id)])
 
     def save(self, *args, **kwargs):
-        # Convert uploaded image to WebP
         if self.image and not self.image.name.endswith(".webp"):
             try:
                 img = Image.open(self.image).convert("RGB")
@@ -55,9 +54,8 @@ class Post(models.Model):
                                 save=False)
                 buffer.close()
             except Exception as e:
-                print(f"⚠️ Error converting image to WebP: {e}")
+                print(f"Error converting image to WebP: {e}")
 
-        # Ensure URL is set
         if not self.url:
             super().save(*args, **kwargs)
             self.url = self.get_absolute_url()
