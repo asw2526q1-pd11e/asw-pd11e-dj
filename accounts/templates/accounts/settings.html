@@ -70,6 +70,18 @@
         </div>
         <input type="hidden" name="delete_banner" id="deleteBannerInput" value="false">
     </div>
+    <!-- API Key Section -->
+     <div class="mb-3">
+    <label class="form-label fw-bold">API Key</label>
+    {% if profile.api_key %}
+        <input type="text" class="form-control" value="{{ profile.api_key }}" readonly>
+    {% else %}
+        <p class="text-muted">No tens cap API key generada.</p>
+    {% endif %}
+    <button type="submit" name="generate_api_key" class="btn btn-secondary mt-2">
+        {% if profile.api_key %}Regenerar API Key{% else %}Generar API Key{% endif %}
+    </button>
+</div>
 
     <button type="submit" class="btn btn-primary">Guardar</button>
 </form>

@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from blog.models import Post, Comment
@@ -14,6 +15,11 @@ class Profile(models.Model):
     saved_comments = models.ManyToManyField(Comment,
                                             blank=True,
                                             related_name='saved_by_comments')
+    api_key = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return self.user.username
+
+    def generate_api_key(self):
+        self.api_key = uuid.uuid4()
+        self.save()
