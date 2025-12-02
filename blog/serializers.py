@@ -117,18 +117,39 @@ class CommentTreeSerializer(serializers.ModelSerializer):
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(required=False, allow_blank=True,
-                                  help_text="Títol del post (opcional)")
-    content = serializers.CharField(required=False, allow_blank=True,
-                                    help_text="Contingut del post (opcional)")
-    url = serializers.URLField(required=False, allow_blank=True,
-                               help_text="Enllaç del post (opcional)")
-    image = serializers.ImageField(required=False, allow_null=True,
-                                   help_text="Imatge del post (opcional)")
+    title = serializers.CharField(required=False, allow_blank=True)
+    content = serializers.CharField(required=False, allow_blank=True)
+    url = serializers.URLField(required=False, allow_blank=True)
+    image = serializers.ImageField(required=False, allow_null=True)
+    communities = serializers.ListField(
+        child=serializers.CharField(),
+        required=True,
+        help_text="Llista de noms de comunitats assignades al post"
+    )
 
     class Meta:
         model = Post
         fields = ['title', 'content', 'url', 'image', 'communities']
+
+    def validate_communities(self, value):
+        if not value:
+            raise serializers.ValidationError("El post "
+                                              "ha de tenir almenys "
+                                              "una comunitat.")
+        return value
+
+    def update(self, instance, validated_data):
+        communities_names = validated_data.pop('communities', None)
+        if communities_names is not None:
+            communities_qs = Community.objects.filter(
+                name__in=communities_names)
+            if not communities_qs.exists():
+                raise serializers.ValidationError("Cap de "
+                                                  "les comunitats "
+                                                  "indicades existeix.")
+            instance.communities.set(communities_qs)
+
+        return super().update(instance, validated_data)
 
 
 class SavedPostSerializer(serializers.ModelSerializer):
