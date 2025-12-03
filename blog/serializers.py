@@ -80,6 +80,12 @@ class PostCreateSerializer(serializers.ModelSerializer):
         return post
 
 
+class CommentCreateSerializer(serializers.Serializer):
+    content = serializers.CharField(required=True)
+    parent_id = serializers.IntegerField(required=False, allow_null=True)
+    image = serializers.ImageField(required=False, allow_null=True)
+
+
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source="author.username",
                                    help_text="Nom d'usuari de "
