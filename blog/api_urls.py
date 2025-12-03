@@ -5,7 +5,8 @@ from .api_views import (post_comments, post_comments_root, post_comments_tree,
                         DownvotePostAPIView, UpvoteCommentAPIView,
                         DownvoteCommentAPIView,
                         PostCreateAPIView, PostEditAPIView, DeletePostAPIView,
-                        CommentCreateAPIView, CommentEditAPIView)
+                        CommentCreateAPIView, CommentEditAPIView,
+                        DeleteCommentAPIView)
 
 app_name = "blog_api"
 
@@ -47,5 +48,7 @@ urlpatterns = [
          ),
     path("comments/<int:comment_id>/edit/",
          CommentEditAPIView.as_view(), name="edit_comment"),
+    path("comments/<int:comment_id>/delete/",
+         DeleteCommentAPIView.as_view(), name="delete_comment"),
 
 ]

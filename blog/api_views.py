@@ -333,6 +333,32 @@ class CommentEditAPIView(generics.GenericAPIView):
 
        return Response(CommentSerializer(comment).data, status=200)
 
+
+class DeleteCommentAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        responses={
+            204: "Comentari eliminat correctament",
+            404: "Comentari no trobat",
+            401: "No autenticat",
+            403: "No tens permís per eliminar aquest comentari"
+        },
+        operation_description="Elimina un comentari concret (només l'autor pot eliminar-lo)",
+        tags=['Comments']
+    )
+    def delete(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+
+        # Comprovem que l'autor és el mateix usuari autenticat
+        if comment.author != request.user:
+            return Response({"detail": "No tens permís per eliminar aquest comentari."}, status=403)
+
+        comment.delete()
+        return Response(status=204)
+
+
 class UpvoteCommentAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
