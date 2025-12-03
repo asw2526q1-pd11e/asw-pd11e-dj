@@ -12,7 +12,7 @@ from django.core.exceptions import ImproperlyConfigured  # <-- afegit
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-8qu^s(p(l2xfx*u9b1qe%uucei#%9@q!lv$d==t5l!lk(+u2qs"
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = ["asw-pd11e-dj.onrender.com", "localhost", "127.0.0.1"]
 
 # -----------------------
