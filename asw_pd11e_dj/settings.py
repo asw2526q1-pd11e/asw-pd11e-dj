@@ -93,7 +93,7 @@ SWAGGER_SETTINGS = {
             'name': 'X-API-Key',
         }
     },
-    'USE_SESSION_AUTH': True, 
+    'USE_SESSION_AUTH': False, 
 }
 
 # -----------------------
