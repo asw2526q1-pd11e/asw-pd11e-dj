@@ -57,6 +57,10 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API for accounts, blog, and communities',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SERVERS': [
+        {'url': 'https://asw-pd11e-dj.onrender.com/api/', 'description': 'Servidor de Producción (Render)'},
+        {'url': 'http://127.0.0.1:8000/api/', 'description': 'Servidor de Desarrollo Local'},
+    ],
 }
 
 # -----------------------
@@ -65,6 +69,7 @@ SPECTACULAR_SETTINGS = {
 MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    'corsheaders.middleware.CorsMiddleware', 
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -72,7 +77,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -89,7 +93,7 @@ SWAGGER_SETTINGS = {
             'name': 'X-API-Key',
         }
     },
-    'USE_SESSION_AUTH': False,  # molt important -> treu el login d'usuari/password
+    'USE_SESSION_AUTH': True, 
 }
 
 # -----------------------
@@ -218,3 +222,19 @@ LOGOUT_REDIRECT_URL = "/"
 # Default primary key
 # -----------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CORS_ALLOW_ALL_ORIGINS = False
+
+CORS_ALLOWED_ORIGINS = [
+    "https://editor.swagger.io",
+    "https://petstore.swagger.io",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "x-api-key",
+]
+
+CORS_ALLOW_CREDENTIALS = True
