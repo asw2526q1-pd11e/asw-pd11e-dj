@@ -21,6 +21,7 @@ from .serializers import (
     PostUpdateSerializer,
     PostDeleteSerializer,
     CommentCreateSerializer,
+    CommentEditSerializer,
 )
 
 # -------------------- POST VIEWS --------------------
@@ -295,6 +296,67 @@ class CommentCreateAPIView(generics.GenericAPIView):
         )
 
         return Response(CommentSerializer(comment).data, status=201)
+
+class CommentEditAPIView(generics.GenericAPIView):
+   authentication_classes = [APIKeyAuthentication]
+   permission_classes = [IsAuthenticated]
+   parser_classes = [MultiPartParser, FormParser]
+   serializer_class = CommentEditSerializer
+   queryset = Comment.objects.none()
+
+
+   def get_object(self, comment_id):
+       return get_object_or_404(Comment, pk=comment_id)
+
+
+   @swagger_auto_schema(
+       request_body=CommentEditSerializer,
+       responses={200: CommentSerializer},
+       operation_description="Edita un comentari existent. Permet modificar el contingut i/o la imatge.",
+       tags=["Comments"],
+   )
+   def put(self, request, comment_id):
+       comment = self.get_object(comment_id)
+
+
+       # Comprovem autor
+       if comment.author != request.user:
+           return Response(
+               {"detail": "No tens permís per editar aquest comentari."}, status=403
+           )
+
+
+       serializer = CommentEditSerializer(comment, data=request.data, partial=True)
+       serializer.is_valid(raise_exception=True)
+       serializer.save()
+
+
+       return Response(CommentSerializer(comment).data, status=200)
+
+
+class DeleteCommentAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        responses={
+            204: "Comentari eliminat correctament",
+            404: "Comentari no trobat",
+            401: "No autenticat",
+            403: "No tens permís per eliminar aquest comentari"
+        },
+        operation_description="Elimina un comentari concret (només l'autor pot eliminar-lo)",
+        tags=['Comments']
+    )
+    def delete(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+
+        # Comprovem que l'autor és el mateix usuari autenticat
+        if comment.author != request.user:
+            return Response({"detail": "No tens permís per eliminar aquest comentari."}, status=403)
+
+        comment.delete()
+        return Response(status=204)
 
 
 class UpvoteCommentAPIView(APIView):

@@ -86,6 +86,12 @@ class CommentCreateSerializer(serializers.Serializer):
     image = serializers.ImageField(required=False, allow_null=True)
 
 
+class CommentEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ["content", "image"]
+
+
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source="author.username",
                                    help_text="Nom d'usuari de "
