@@ -1,5 +1,6 @@
 # flake8: noqa E501
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Post, Comment, VoteComment, VotePost
@@ -19,6 +20,8 @@ from .serializers import (
     CommentTreeSerializer,
     PostUpdateSerializer,
     PostDeleteSerializer,
+    CommentCreateSerializer,
+    CommentEditSerializer,
 )
 
 # -------------------- POST VIEWS --------------------
@@ -257,6 +260,103 @@ def post_comments_root(request, pk):
     for c in serializer.data:
         c['replies'] = []
     return Response(serializer.data)
+
+class CommentCreateAPIView(generics.GenericAPIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    serializer_class = CommentCreateSerializer
+
+    @swagger_auto_schema(
+        request_body=CommentCreateSerializer,
+        responses={201: CommentSerializer},
+        operation_description="Crea un comentario en un post. Soporta parent_id e imagen.",
+        tags=['Comments']
+    )
+    def post(self, request, post_id):
+        post = get_object_or_404(Post, pk=post_id)
+
+        serializer = CommentCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        parent_comment = None
+        parent_id = data.get("parent_id")
+        if parent_id:
+            parent_comment = get_object_or_404(Comment, pk=parent_id, post=post)
+
+        comment = Comment.objects.create(
+            post=post,
+            author=request.user,
+            content=data["content"],
+            parent=parent_comment,
+            image=data.get("image"),
+            published_date=timezone.now(),
+            votes=0,
+        )
+
+        return Response(CommentSerializer(comment).data, status=201)
+
+class CommentEditAPIView(generics.GenericAPIView):
+   authentication_classes = [APIKeyAuthentication]
+   permission_classes = [IsAuthenticated]
+   parser_classes = [MultiPartParser, FormParser]
+   serializer_class = CommentEditSerializer
+   queryset = Comment.objects.none()
+
+
+   def get_object(self, comment_id):
+       return get_object_or_404(Comment, pk=comment_id)
+
+
+   @swagger_auto_schema(
+       request_body=CommentEditSerializer,
+       responses={200: CommentSerializer},
+       operation_description="Edita un comentari existent. Permet modificar el contingut i/o la imatge.",
+       tags=["Comments"],
+   )
+   def put(self, request, comment_id):
+       comment = self.get_object(comment_id)
+
+
+       # Comprovem autor
+       if comment.author != request.user:
+           return Response(
+               {"detail": "No tens permís per editar aquest comentari."}, status=403
+           )
+
+
+       serializer = CommentEditSerializer(comment, data=request.data, partial=True)
+       serializer.is_valid(raise_exception=True)
+       serializer.save()
+
+
+       return Response(CommentSerializer(comment).data, status=200)
+
+
+class DeleteCommentAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        responses={
+            204: "Comentari eliminat correctament",
+            404: "Comentari no trobat",
+            401: "No autenticat",
+            403: "No tens permís per eliminar aquest comentari"
+        },
+        operation_description="Elimina un comentari concret (només l'autor pot eliminar-lo)",
+        tags=['Comments']
+    )
+    def delete(self, request, comment_id):
+        comment = get_object_or_404(Comment, pk=comment_id)
+
+        # Comprovem que l'autor és el mateix usuari autenticat
+        if comment.author != request.user:
+            return Response({"detail": "No tens permís per eliminar aquest comentari."}, status=403)
+
+        comment.delete()
+        return Response(status=204)
 
 
 class UpvoteCommentAPIView(APIView):
