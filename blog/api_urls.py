@@ -3,6 +3,7 @@ from .api_views import (post_comments, post_comments_root, post_comments_tree,
                         post_detail, post_list, post_list_ordered,
                         search_posts_comments,
                         post_comments_ordered,
+                        posts_list_filtered,
                         UpvotePostAPIView,
                         DownvotePostAPIView, UpvoteCommentAPIView,
                         DownvoteCommentAPIView,
@@ -24,6 +25,7 @@ urlpatterns = [
     path('posts/', post_list_ordered, name='post_list_ordered'),
     path('api/posts/<int:pk>/comments/order', post_comments_ordered,
          name='comments_ordered'),
+    path('api/posts/filter', posts_list_filtered, name='posts_filtered'),
 
     # POSTS
     path('api/posts/<int:pk>/upvote/',

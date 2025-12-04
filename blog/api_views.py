@@ -109,6 +109,42 @@ def post_list_ordered(request):
     return Response(serializer.data)
 
 
+
+mode_param = openapi.Parameter(
+    'mode',
+    openapi.IN_QUERY,
+    description="Filtre de posts: 'tot', 'subscrit', 'local'",
+    type=openapi.TYPE_STRING,
+    required=False,
+    default='tot',
+    enum=['tot', 'subscrit', 'local']
+)
+
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[mode_param],
+    operation_description="Retorna la llista de posts filtrats per mode: Tot, Subscrit, Local.",
+    responses={200: PostSerializer(many=True)},
+    tags=['Posts']
+)
+
+@api_view(['GET'])
+def posts_list_filtered(request):
+
+    user = request.user
+    filter_mode = request.GET.get('mode', 'tot')
+
+    posts = Post.objects.prefetch_related('communities').all()
+
+    if filter_mode == 'subscrit':
+        posts = [p for p in posts if p.communities.filter(subscribers=user).exists()]
+    elif filter_mode == 'local':
+        posts = [p for p in posts if not p.communities.filter(subscribers=user).exists()]
+
+    serializer = PostSerializer(posts, many=True)
+    return Response(serializer.data, status=200)
+
+
 class PostCreateAPIView(generics.GenericAPIView):
     serializer_class = PostCreateSerializer
     authentication_classes = [APIKeyAuthentication]
