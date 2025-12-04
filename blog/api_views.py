@@ -65,6 +65,47 @@ def post_detail(request, pk):
     return Response(serializer.data)
 
 
+order_param = openapi.Parameter(
+    'order',
+    openapi.IN_QUERY,
+    description="Criteri d'ordenació: 'nou', 'antic', 'mes_comentaris', 'mes_vots'",
+    type=openapi.TYPE_STRING,
+    required=False,
+    enum=['nou', 'antic', 'mes_comentaris', 'mes_vots']
+)
+
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[order_param],
+    operation_id="blog_posts_order",
+    operation_description="Retorna la llista de posts ordenats segons el criteri indicat.",
+    responses={200: PostSerializer(many=True)},
+    tags=['Posts']
+)
+@api_view(['GET'])
+def post_list_ordered(request):
+    """
+    GET /api/blog/posts/?order=nou|antic|mes_comentaris|mes_vots
+    Retorna els posts ordenats.
+    """
+
+    order = request.GET.get("order", "nou")
+
+    if order == "nou":
+        posts = Post.objects.all().order_by("-published_date")
+    elif order == "antic":
+        posts = Post.objects.all().order_by("published_date")
+    elif order == "mes_comentaris":
+        posts = Post.objects.annotate(num_comments=Count('comments')).order_by("-num_comments")
+    elif order == "mes_vots":
+        posts = Post.objects.all().order_by("-votes")
+    else:
+        posts = Post.objects.all().order_by("-published_date")
+
+    serializer = PostSerializer(posts, many=True)
+    return Response(serializer.data)
+
+
 class PostCreateAPIView(generics.GenericAPIView):
     serializer_class = PostCreateSerializer
     authentication_classes = [APIKeyAuthentication]
@@ -193,6 +234,7 @@ class DownvotePostAPIView(APIView):
             post.save()
 
         return Response({"votes": post.votes})
+    
 
 # -------------------- COMMENT VIEWS --------------------
 
