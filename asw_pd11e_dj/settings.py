@@ -52,16 +52,36 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+# -----------------------
+# DRF YASG / SPECTACULAR SETTINGS
+# -----------------------
 SPECTACULAR_SETTINGS = {
     'TITLE': 'ASW Project API',
     'DESCRIPTION': 'API for accounts, blog, and communities',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,  # <-- Important per separar request i response
+    'POSTPROCESSING_HOOKS': [],
+    'SCHEMA_PATH_PREFIX': r'/api',
     'SERVERS': [
         {'url': 'https://asw-pd11e-dj.onrender.com/', 'description': 'Servidor de Producción (Render)'},
-        {'url': 'http://127.0.0.1:8000/api/', 'description': 'Servidor de Desarrollo Local'},
+        {'url': 'http://127.0.0.1:8000/', 'description': 'Servidor de Desarrollo Local'},
     ],
 }
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'API Key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'X-API-Key',
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SUPPORTED_SUBMIT_METHODS': ['get', 'post', 'put', 'delete', 'patch'],
+}
+
 
 # -----------------------
 # Middleware
@@ -79,16 +99,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'API Key': {
-            'type': 'apiKey',
-            'in': 'header',
-            'name': 'X-API-Key',
-        }
-    },
-    'USE_SESSION_AUTH': False, 
-}
 
 # -----------------------
 # URLs and Templates
