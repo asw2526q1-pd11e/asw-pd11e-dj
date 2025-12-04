@@ -22,7 +22,7 @@ urlpatterns = [
          name='post_comments_root'),
     path('api/search/', search_posts_comments, name='search_posts_comments'),
     path('posts/', post_list_ordered, name='post_list_ordered'),
-    path('posts/<int:pk>/comments/', post_comments_ordered,
+    path('api/posts/<int:pk>/comments/order', post_comments_ordered,
          name='comments_ordered'),
 
     # POSTS

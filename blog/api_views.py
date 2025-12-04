@@ -319,7 +319,6 @@ order_param_comments = openapi.Parameter(
 @swagger_auto_schema(
     method='get',
     manual_parameters=[order_param_comments],
-    operation_id="blog_api_comments_ordered",
     operation_description="Retorna els comentaris d'un post ordenats per top, nou o antic, amb estructura d'arbre.",
     responses={200: CommentTreeSerializer(many=True)},
     tags=['Comments']
