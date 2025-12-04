@@ -2,6 +2,7 @@
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from blog.views.post_views import get_comments_tree
 from .models import Post, Comment, VoteComment, VotePost
@@ -132,6 +133,7 @@ mode_param = openapi.Parameter(
 )
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def posts_list_filtered(request):
 
     user = request.user
@@ -145,7 +147,7 @@ def posts_list_filtered(request):
         posts = [p for p in posts if not p.communities.filter(subscribers=user).exists()]
 
     serializer = PostSerializer(posts, many=True)
-    return Response(serializer.data, status=200)
+    return Response(serializer.data)
 
 
 class PostCreateAPIView(generics.GenericAPIView):
