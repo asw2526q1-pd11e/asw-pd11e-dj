@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'drf_spectacular',
     'corsheaders',
+    'rest_framework.authtoken',
 ]
 
 SITE_ID = 1
