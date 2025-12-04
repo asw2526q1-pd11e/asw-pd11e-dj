@@ -87,9 +87,21 @@ class CommentCreateSerializer(serializers.Serializer):
 
 
 class CommentEditSerializer(serializers.ModelSerializer):
+    content = serializers.CharField(required=False,
+                                    allow_blank=True, default="")
+    image = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = Comment
         fields = ["content", "image"]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if not rep.get("content"):
+            rep["content"] = ""
+        if not rep.get("image"):
+            rep["image"] = None
+        return rep
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -129,14 +141,15 @@ class CommentTreeSerializer(serializers.ModelSerializer):
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(required=False, allow_blank=True)
-    content = serializers.CharField(required=False, allow_blank=True)
-    url = serializers.URLField(required=False, allow_blank=True)
+    title = serializers.CharField(required=False, allow_blank=True, default="")
+    content = serializers.CharField(required=False,
+                                    allow_blank=True, default="")
+    url = serializers.URLField(required=False, allow_blank=True, default="")
     image = serializers.ImageField(required=False, allow_null=True)
     communities = serializers.ListField(
-        child=serializers.CharField(),
-        required=True,
-        help_text="Llista de noms de comunitats assignades al post"
+        child=serializers.CharField(allow_blank=True),
+        required=False,
+        default=[""],
     )
 
     class Meta:
