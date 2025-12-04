@@ -24,7 +24,4 @@ urlpatterns = [
     path('api/communities/<int:pk>/unsubscribe/',
          api_views.community_unsubscribe_api,
          name='unsubscribe-community'),
-    path('api/communities/filter',
-         api_views.communities_list_filtered,
-         name='communities_filtered'),
 ]
