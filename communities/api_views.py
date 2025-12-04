@@ -192,7 +192,6 @@ filter_param = openapi.Parameter(
 @swagger_auto_schema(
     method='get',
     manual_parameters=[filter_param],
-    operation_id="communities_filtered",
     operation_description="Retorna les comunitats filtrades per mode: Tot, Subscrit, Local.",
     responses={200: "Llista de comunitats amb informació de subscriptors, posts i comentaris"},
     tags=['communities']
@@ -201,7 +200,7 @@ filter_param = openapi.Parameter(
 def communities_list_filtered(request):
 
     user = request.user
-    filter_mode = request.GET.get('mode', 'tot')  # 'tot', 'subscrit', 'local'
+    filter_mode = request.GET.get('mode', 'tot')
 
     communities = Community.objects.annotate(
         real_posts=Count('posts', distinct=True),
@@ -224,7 +223,7 @@ def communities_list_filtered(request):
             "is_subscribed": user in c.subscribers.all()
         })
 
-    return Response(community_data, status=status.HTTP_200_OK)    
+    return Response(community_data, status=status.HTTP_200_OK)
 
 class CommunityCreateAPIView(generics.CreateAPIView):
     """
