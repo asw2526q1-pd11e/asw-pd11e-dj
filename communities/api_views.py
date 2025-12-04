@@ -3,16 +3,17 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import serializers, status
 from django.shortcuts import get_object_or_404
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 from django.db import models
 from rest_framework.permissions import IsAuthenticated
 from accounts.authentication import APIKeyAuthentication
 from blog.models import Post
 from communities.models import Community
-from drf_yasg import openapi
 from rest_framework import generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import authentication_classes, permission_classes
+from django.http import Http404
 
 # -------------------- SERIALIZERS --------------------
 
@@ -78,25 +79,114 @@ class CommunityCreateSerializer(serializers.ModelSerializer):
 
 # -------------------- VIEWS --------------------
 
-@swagger_auto_schema(
-    method='get',
-    operation_description="Retorna la llista de totes les comunitats amb informació bàsica: nom, avatar, banner, número de subscriptors, posts i comentaris",
+@extend_schema(
+    summary="Llista de comunitats",
+    description=(
+        "Retorna la llista de totes les comunitats amb informació bàsica: nom, avatar, banner, número de subscriptors, posts i comentaris.\n"
+        "\n"
+        "**Paràmetres de filtratge (filter):**\n"
+        "- **all** (defecte): Retorna totes les comunitats sense filtre\n"
+        "- **subscribed**: Retorna només comunitats a les quals l'usuari està subscrit. **Requereix autenticació**\n"
+        "- **local**: Retorna només comunitats a les quals l'usuari NO està subscrit. **Requereix autenticació**\n"
+        "\n"
+        "**Notes:**\n"
+        "- Els filtres 'subscribed' i 'local' retornen un error 401 si l'usuari no està autenticat\n"
+        "- Cada comunitat inclou estadístiques agregades de posts i comentaris"
+    ),
+    parameters=[
+        OpenApiParameter(
+            name='filter',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Filtre per estat de subscripció (subscribed i local requereixen autenticació)",
+            enum=['all', 'subscribed', 'local'],
+            default='all',
+            required=False
+        ),
+    ],
     responses={
-        200: CommunitySerializer(many=True),
-        500: 'Error intern del servidor'
-    }
+        200: OpenApiResponse(
+            response=CommunitySerializer(many=True),
+            description="Llista de comunitats retornada correctament"
+        ),
+        400: OpenApiResponse(
+            description="Bad Request - Paràmetre invàlid",
+            examples=[
+                OpenApiExample(
+                    'Error paràmetre filter invàlid',
+                    value={"error": "Paràmetre 'filter' invàlid. Valors permesos: all, subscribed, local"},
+                    response_only=True
+                )
+            ]
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized - Autenticació requerida per utilitzar filtres subscribed o local",
+            examples=[
+                OpenApiExample(
+                    'Error autenticació requerida',
+                    value={"error": "Cal autenticació per utilitzar els filtres 'subscribed' o 'local'"},
+                    response_only=True
+                )
+            ]
+        ),
+        500: OpenApiResponse(
+            description="Error intern del servidor",
+            examples=[
+                OpenApiExample(
+                    'Error del servidor',
+                    value={"error": "Error intern del servidor"},
+                    response_only=True
+                )
+            ]
+        )
+    },
+    tags=['Communities']
 )
 @api_view(['GET'])
 def community_list_api(request):
     """
-    GET /api/communities/
-    Retorna totes les comunitats amb estadístiques agregades.
+    GET /api/communities/?filter=all
+    Retorna totes les comunitats amb estadístiques agregades i filtratge per subscripció.
     """
     try:
+        # Obtenir paràmetre de filtratge
+        filter_type = request.GET.get('filter', 'all').lower()
+        
+        # Validar paràmetre
+        valid_filters = ['all', 'subscribed', 'local']
+        if filter_type not in valid_filters:
+            return Response({
+                "error": f"Paràmetre 'filter' invàlid. Valors permesos: {', '.join(valid_filters)}"
+            }, status=400)
+        
+        # Filtres subscribed i local requereixen autenticació
+        if filter_type in ['subscribed', 'local'] and not request.user.is_authenticated:
+            return Response({
+                "error": "Cal autenticació per utilitzar els filtres 'subscribed' o 'local'"
+            }, status=401)
+        
+        # Obtenir comunitats amb anotacions
         communities = Community.objects.annotate(
             posts_count=models.Count('posts', distinct=True),
             comments_count=models.Count('posts__comments', distinct=True)
         )
+        
+        # Aplicar filtre
+        if filter_type == 'subscribed' and request.user.is_authenticated:
+            # Comunitats a les quals l'usuari està subscrit
+            communities = communities.filter(subscribers=request.user)
+        
+        elif filter_type == 'local' and request.user.is_authenticated:
+            # Comunitats a les quals l'usuari NO està subscrit
+            communities = communities.exclude(subscribers=request.user)
+        
+        # Retornar missatge si no hi ha comunitats
+        if not communities.exists():
+            return Response({
+                "message": "No s'han trobat comunitats amb els filtres aplicats",
+                "communities": []
+            }, status=status.HTTP_200_OK)
+        
         serializer = CommunitySerializer(communities, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
@@ -106,14 +196,15 @@ def community_list_api(request):
         )
 
 
-@swagger_auto_schema(
-    method='get',
-    operation_description="Retorna la informació d'una comunitat concreta per id. Inclou número de subscriptors, posts i comentaris",
+@extend_schema(
+    summary="Detall d'una comunitat",
+    description="Retorna la informació d'una comunitat concreta per id. Inclou número de subscriptors, posts i comentaris",
     responses={
         200: CommunitySerializer,
-        404: 'Comunitat no trobada',
-        500: 'Error intern del servidor'
-    }
+        404: OpenApiResponse(description='Comunitat no trobada'),
+        500: OpenApiResponse(description='Error intern del servidor')
+    },
+    tags=['Communities']
 )
 @api_view(['GET'])
 def community_detail_api(request, pk):
@@ -131,9 +222,9 @@ def community_detail_api(request, pk):
         )
         serializer = CommunitySerializer(community)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    except Community.DoesNotExist:
+    except Http404:
         return Response(
-            {"error": "Comunitat no trobada"},
+            {"detail": "Comunitat no trobada"},
             status=status.HTTP_404_NOT_FOUND
         )
     except Exception as e:
@@ -142,15 +233,15 @@ def community_detail_api(request, pk):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
-
-@swagger_auto_schema(
-    method='get',
-    operation_description="Retorna tots els posts d'una comunitat concreta amb tota la informació del post, incloent totes les comunitats a les quals pertanyen (no només la comunitat filtrada)",
+@extend_schema(
+    summary="Posts d'una comunitat",
+    description="Retorna tots els posts d'una comunitat concreta amb tota la informació del post, incloent totes les comunitats a les quals pertanyen (no només la comunitat filtrada). Els posts s'ordenen per data de publicació (més recents primer)",
     responses={
         200: PostSerializer(many=True),
-        404: 'Comunitat no trobada',
-        500: 'Error intern del servidor'
-    }
+        404: OpenApiResponse(description='Comunitat no trobada'),
+        500: OpenApiResponse(description='Error intern del servidor')
+    },
+    tags=['Communities']
 )
 @api_view(['GET'])
 def community_posts_api(request, pk):
@@ -166,9 +257,9 @@ def community_posts_api(request, pk):
         ).order_by('-published_date')
         serializer = PostSerializer(posts, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    except Community.DoesNotExist:
+    except Http404:
         return Response(
-            {"error": "Comunitat no trobada"},
+            {"detail": "Comunitat no trobada"},
             status=status.HTTP_404_NOT_FOUND
         )
     except Exception as e:
@@ -176,7 +267,6 @@ def community_posts_api(request, pk):
             {"error": f"Error intern del servidor: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    
 
 class CommunityCreateAPIView(generics.CreateAPIView):
     """
@@ -188,41 +278,26 @@ class CommunityCreateAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    @swagger_auto_schema(
-        operation_description="""
-        Crea una comunitat nova amb:
-        - **name**: Nom de la comunitat (obligatori)
-        - **avatar**: Imatge (opcional)
-        - **banner**: Imatge (opcional)
-
-        L'usuari autenticat es converteix automàticament en el primer subscriptor.
-        """,
-        manual_parameters=[
-            openapi.Parameter(
-                'avatar',
-                openapi.IN_FORM,
-                description="Imatge d'avatar",
-                type=openapi.TYPE_FILE,
-                required=False
-            ),
-            openapi.Parameter(
-                'banner',
-                openapi.IN_FORM,
-                description="Imatge de banner",
-                type=openapi.TYPE_FILE,
-                required=False
-            )
-        ],
-        consumes=['multipart/form-data'],
+    @extend_schema(
+        summary="Crear comunitat",
+        description=(
+            "Crea una comunitat nova amb:\n"
+            "- **name**: Nom de la comunitat (obligatori)\n"
+            "- **avatar**: Imatge d'avatar (opcional)\n"
+            "- **banner**: Imatge de banner (opcional)\n"
+            "\n"
+            "L'usuari autenticat es converteix automàticament en el primer subscriptor."
+        ),
+        request=CommunityCreateSerializer,
         responses={
-            201: openapi.Response(
-                description="Comunitat creada correctament",
-                schema=CommunitySerializer
+            201: OpenApiResponse(
+                response=CommunitySerializer,
+                description="Comunitat creada correctament"
             ),
-            400: "Dades invàlides",
-            401: "No autenticat"
+            400: OpenApiResponse(description="Dades invàlides"),
+            401: OpenApiResponse(description="No autenticat")
         },
-        tags=['communities']
+        tags=['Communities']
     )
     def post(self, request, *args, **kwargs):
         return super().post(request, *args, **kwargs)
@@ -250,16 +325,34 @@ class CommunityCreateAPIView(generics.CreateAPIView):
         output_serializer = CommunitySerializer(annotated_community)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
-@swagger_auto_schema(
-    method='post',
-    operation_description="Subscribirse a una comunidad",
+@extend_schema(
+    summary="Subscriure's a una comunitat",
+    description="Subscriu l'usuari autenticat a una comunitat",
     responses={
-        200: "Suscripción realizada correctamente",
-        400: "El usuario ya está suscrito",
-        401: "No autenticado",
-        404: "Comunidad no encontrada"
+        200: OpenApiResponse(
+            description="Subscripció realitzada correctament",
+            examples=[
+                OpenApiExample(
+                    'Subscripció correcta',
+                    value={"message": "Subscripció realitzada correctament"},
+                    response_only=True
+                )
+            ]
+        ),
+        400: OpenApiResponse(
+            description="L'usuari ja està subscrit",
+            examples=[
+                OpenApiExample(
+                    'Ja subscrit',
+                    value={"error": "Ja estàs subscrit a aquesta comunitat"},
+                    response_only=True
+                )
+            ]
+        ),
+        401: OpenApiResponse(description="No autenticat"),
+        404: OpenApiResponse(description="Comunitat no trobada")
     },
-    tags=["communities"]
+    tags=["Communities"]
 )
 @api_view(['POST'])
 def community_subscribe_api(request, pk):
@@ -269,34 +362,57 @@ def community_subscribe_api(request, pk):
     """
     if not request.user.is_authenticated:
         return Response(
-            {"error": "Usuario no autenticado"},
+            {"error": "Usuari no autenticat"},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    community = get_object_or_404(Community, pk=pk)
-
+    try:
+        community = get_object_or_404(Community, pk=pk)
+    except Http404:
+        return Response(
+            {"detail": "Comunitat no trobada"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
     if request.user in community.subscribers.all():
         return Response(
-            {"error": "Ya estás suscrito a esta comunidad"},
+            {"error": "Ja estàs subscrit a aquesta comunitat"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     community.subscribers.add(request.user)
     return Response(
-        {"message": "Suscripción realizada correctamente"},
+        {"message": "Subscripció realitzada correctament"},
         status=status.HTTP_200_OK
     )
 
-@swagger_auto_schema(
-    method='post',
-    operation_description="Darse de baja de una comunidad",
+@extend_schema(
+    summary="Donar-se de baixa d'una comunitat",
+    description="Elimina l'usuari autenticat de la llista de subscriptors d'una comunitat",
     responses={
-        200: "Te has dado de baja correctamente",
-        400: "El usuario no estaba suscrito",
-        401: "No autenticado",
-        404: "Comunidad no encontrada"
+        200: OpenApiResponse(
+            description="Baixa realitzada correctament",
+            examples=[
+                OpenApiExample(
+                    'Baixa correcta',
+                    value={"message": "T'has donat de baixa correctament"},
+                    response_only=True
+                )
+            ]
+        ),
+        400: OpenApiResponse(
+            description="L'usuari no estava subscrit",
+            examples=[
+                OpenApiExample(
+                    'No subscrit',
+                    value={"error": "No estàs subscrit a aquesta comunitat"},
+                    response_only=True
+                )
+            ]
+        ),
+        401: OpenApiResponse(description="No autenticat"),
+        404: OpenApiResponse(description="Comunitat no trobada")
     },
-    tags=["communities"]
+    tags=["Communities"]
 )
 @api_view(['POST'])
 def community_unsubscribe_api(request, pk):
@@ -306,20 +422,26 @@ def community_unsubscribe_api(request, pk):
     """
     if not request.user.is_authenticated:
         return Response(
-            {"error": "Usuario no autenticado"},
+            {"error": "Usuari no autenticat"},
             status=status.HTTP_401_UNAUTHORIZED
         )
 
-    community = get_object_or_404(Community, pk=pk)
+    try:
+        community = get_object_or_404(Community, pk=pk)
+    except Http404:
+        return Response(
+            {"detail": "Comunitat no trobada"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     if request.user not in community.subscribers.all():
         return Response(
-            {"error": "No estás suscrito a esta comunidad"},
+            {"error": "No estàs subscrit a aquesta comunitat"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
     community.subscribers.remove(request.user)
     return Response(
-        {"message": "Te has dado de baja correctamente"},
+        {"message": "T'has donat de baixa correctament"},
         status=status.HTTP_200_OK
     )
