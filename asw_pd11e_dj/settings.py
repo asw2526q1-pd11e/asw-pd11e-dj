@@ -45,6 +45,9 @@ SITE_ID = 1
 # REST Framework Configuration
 # -----------------------
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'accounts.authentication.APIKeyAuthentication',
+    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
@@ -70,7 +73,7 @@ SPECTACULAR_SETTINGS = {
         },
     ],
     
-    # ⚠️ IMPORTANT: Només mostrar ApiKeyAuth
+    # Configuració de seguretat global
     'APPEND_COMPONENTS': {
         'securitySchemes': {
             'ApiKeyAuth': {
@@ -82,22 +85,13 @@ SPECTACULAR_SETTINGS = {
         }
     },
     
-    # ⚠️ CLAU: Deshabilitar la detecció automàtica d'autenticació
-    'AUTHENTICATION_WHITELIST': [
-        'accounts.authentication.APIKeyAuthentication',
-    ],
-    
-    # NO apliquem seguretat globalment
-    # Cada endpoint decideix si requereix autenticació
+    # Aplica la seguretat globalment per defecte
+    'SECURITY': [{'ApiKeyAuth': []}],
     
     # Altres opcions
     'SCHEMA_PATH_PREFIX': r'/api/',
     'PREPROCESSING_HOOKS': [],
     'POSTPROCESSING_HOOKS': [],
-    
-    # ⚠️ Deshabilitar l'auto-detecció de mètodes d'autenticació
-    'CAMELIZE_NAMES': False,
-    'ENUM_NAME_OVERRIDES': {},
 }
 
 
