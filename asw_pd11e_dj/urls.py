@@ -25,6 +25,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from drf_spectacular.views import SpectacularAPIView
 
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Blog API",
@@ -33,6 +34,7 @@ schema_view = get_schema_view(
     ),
     public=True,
     permission_classes=[permissions.AllowAny],
+    url="https://asw-pd11e-dj.onrender.com",  # ✅ dominio público
 )
 
 
@@ -50,27 +52,30 @@ urlpatterns = [
     path("blog/", include(("blog.urls", "blog"), namespace="blog")),
     path("communities/", include(("communities.urls",
                                   "communities"), namespace="communities")),
+
+    # APIs
     path("api/accounts/", include(("accounts.api_urls",
                                    "accounts_api"), namespace="accounts_api")),
+    path("api/blog/", include(("blog.api_urls",
+                               "blog_api"), namespace="blog_api")),
+    path("api/communities/", include(("communities.api_urls",
+                                      "communities_api"),
+                                     namespace="communities_api")),
 
+    # Swagger
+    path("swagger/", schema_view.with_ui('swagger', cache_timeout=0),
+         name="schema-swagger-ui"),
+    path("redoc/", schema_view.with_ui('redoc', cache_timeout=0),
+         name="schema-redoc"),
+    path("swagger.json", schema_view.without_ui(cache_timeout=0),
+         name="schema-json"),
+    path("swagger.yaml", schema_view.without_ui(cache_timeout=0),
+         name="schema-yaml"),
 
-    # URLs de la API
-    path('api/blog/', include('blog.api_urls', namespace='blog_api')),
-    path('api/communities/',
-         include('communities.api_urls',
-                 namespace='communities_api')),
-
-    # Documentación de la API
-    path('swagger/', schema_view.with_ui(
-        'swagger',
-        cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui(
-        'redoc',
-        cache_timeout=0), name='schema-redoc'),
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    # Spectacular
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
 ]
 
-# configuración de archivos estáticos y media en modo DEBUG
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)
