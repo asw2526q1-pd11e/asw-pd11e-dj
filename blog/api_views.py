@@ -2,6 +2,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from blog.views.post_views import get_comments_tree
 from .models import Post, Comment, VoteComment, VotePost
 from rest_framework import serializers
 from drf_yasg.utils import swagger_auto_schema
@@ -13,6 +14,8 @@ from rest_framework import generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from django.db.models import Count
+
+
 
 from .serializers import (
     PostSerializer,
@@ -301,6 +304,39 @@ def post_comments_root(request, pk):
     for c in serializer.data:
         c['replies'] = []
     return Response(serializer.data)
+
+
+order_param_comments = openapi.Parameter(
+    'order',
+    openapi.IN_QUERY,
+    description="Criteri d'ordenació: 'top', 'new', 'old'",
+    type=openapi.TYPE_STRING,
+    required=False,
+    default='top',
+    enum=['top', 'new', 'old']
+)
+
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[order_param_comments],
+    operation_id="blog_api_comments_ordered",
+    operation_description="Retorna els comentaris d'un post ordenats per top, nou o antic, amb estructura d'arbre.",
+    responses={200: CommentTreeSerializer(many=True)},
+    tags=['Comments']
+)
+@api_view(['GET'])
+def post_comments_ordered(request, pk):
+    """
+    GET /api/blog/posts/{id}/comments/?order=top|new|old
+    Torna els comentaris ordenats tal com es mostra a la web.
+    """
+    order = request.GET.get("order", "top")
+
+    if order not in ["top", "new", "old"]:
+        order = "top"
+
+    comments_data = get_comments_tree(pk, request.user, order)
+    return Response(comments_data)
 
 
 class UpvoteCommentAPIView(APIView):
