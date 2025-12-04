@@ -2,6 +2,7 @@ from django.urls import path
 from .api_views import (post_comments, post_comments_root, post_comments_tree,
                         post_detail, post_list, post_list_ordered,
                         search_posts_comments,
+                        post_comments_ordered,
                         UpvotePostAPIView,
                         DownvotePostAPIView, UpvoteCommentAPIView,
                         DownvoteCommentAPIView,
@@ -23,6 +24,8 @@ urlpatterns = [
          name='post_comments_root'),
     path('api/search/', search_posts_comments, name='search_posts_comments'),
     path('posts/', post_list_ordered, name='post_list_ordered'),
+    path('api/posts/<int:pk>/comments/order', post_comments_ordered,
+         name='comments_ordered'),
 
     # POSTS
     path('api/posts/<int:pk>/upvote/',

@@ -176,7 +176,6 @@ def community_posts_api(request, pk):
             {"error": f"Error intern del servidor: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    
 
 class CommunityCreateAPIView(generics.CreateAPIView):
     """
