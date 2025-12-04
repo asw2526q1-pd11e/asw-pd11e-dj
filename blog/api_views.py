@@ -1,12 +1,13 @@
 # flake8: noqa E501
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.db.models import Count, Q
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import Post, Comment, VoteComment, VotePost
 from rest_framework import serializers
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from accounts.authentication import APIKeyAuthentication
@@ -26,32 +27,164 @@ from .serializers import (
 
 # -------------------- POST VIEWS --------------------
 
-@swagger_auto_schema(
-    method='get',
-    operation_description="Retorna la llista de tots els posts amb les seves comunitats",
+@extend_schema(
+    summary="Llista de posts",
+    description="""
+    Retorna la llista de tots els posts amb les seves comunitats associades.
+    
+    **Paràmetres d'ordenació (order):**
+    - `new` (defecte): Ordena del més recent al més antic per data de publicació
+    - `old`: Ordena del més antic al més recent per data de publicació
+    - `comments`: Ordena per nombre de comentaris (de més a menys). Els posts amb el mateix nombre de comentaris s'ordenen per data (més recents primer)
+    - `votes`: Ordena per nombre de vots (de més a menys). Els posts amb els mateixos vots s'ordenen per data (més recents primer)
+    
+    **Paràmetres de filtratge (filter):**
+    - `all` (defecte): Retorna tots els posts sense filtre
+    - `subscribed`: Retorna només posts de comunitats a les quals l'usuari està subscrit. **Requereix autenticació**
+    - `local`: Retorna només posts de comunitats a les quals l'usuari NO està subscrit. **Requereix autenticació**
+    
+    **Exemples d'ús:**
+    - `/api/posts/` - Posts més recents (comportament per defecte)
+    - `/api/posts/?order=votes` - Posts ordenats per vots
+    - `/api/posts/?filter=subscribed&order=comments` - Posts de comunitats subscrites ordenats per nombre de comentaris
+    - `/api/posts/?filter=local&order=new` - Posts de comunitats no subscrites (locals) ordenats per data
+    
+    **Notes:**
+    - Els paràmetres són opcionals. Si no s'especifiquen, s'utilitzen els valors per defecte (order=new, filter=all)
+    - Els filtres 'subscribed' i 'local' retornen un error 401 si l'usuari no està autenticat
+    - Si un post pertany a múltiples comunitats, només apareixerà una vegada als resultats
+    """,
+    parameters=[
+        OpenApiParameter(
+            name='order',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Criteri d'ordenació dels posts",
+            enum=['new', 'old', 'comments', 'votes'],
+            default='new',
+            required=False
+        ),
+        OpenApiParameter(
+            name='filter',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Filtre per tipus de comunitat (subscribed i local requereixen autenticació)",
+            enum=['all', 'subscribed', 'local'],
+            default='all',
+            required=False
+        ),
+    ],
     responses={
-        200: PostSerializer(many=True),
-        500: 'Error intern del servidor'
+        200: OpenApiResponse(
+            response=PostSerializer(many=True),
+            description="Llista de posts retornada correctament"
+        ),
+        400: OpenApiResponse(
+            description="Bad Request - Paràmetres invàlids",
+            examples=[
+                OpenApiExample(
+                    'Error paràmetre order invàlid',
+                    value={"error": "Paràmetre 'order' invàlid. Valors permesos: new, old, comments, votes"},
+                    response_only=True
+                ),
+                OpenApiExample(
+                    'Error paràmetre filter invàlid',
+                    value={"error": "Paràmetre 'filter' invàlid. Valors permesos: all, subscribed, local"},
+                    response_only=True
+                )
+            ]
+        ),
+        401: OpenApiResponse(
+            description="Unauthorized - Autenticació requerida per utilitzar filtres subscribed o local",
+            examples=[
+                OpenApiExample(
+                    'Error autenticació requerida',
+                    value={"error": "Cal autenticació per utilitzar els filtres 'subscribed' o 'local'"},
+                    response_only=True
+                )
+            ]
+        ),
+        500: OpenApiResponse(
+            description="Error intern del servidor",
+            examples=[
+                OpenApiExample(
+                    'Error del servidor',
+                    value={"error": "S'ha produït un error inesperat al servidor"},
+                    response_only=True
+                )
+            ]
+        )
     },
     tags=['Posts']
 )
 @api_view(['GET'])
 def post_list(request):
     """
-    GET /api/posts/
+    GET /api/posts/?order=new&filter=all
     Retorna tots els posts amb informació de les comunitats a les quals pertanyen.
+    
+    Paràmetres:
+    - order: new (defecte), old, comments, votes
+    - filter: all (defecte), subscribed, local (requereix autenticació)
     """
+    # Obtenir paràmetres
+    order = request.GET.get('order', 'new').lower()
+    filter_type = request.GET.get('filter', 'all').lower()
+    
+    # Validar paràmetres
+    valid_orders = ['new', 'old', 'comments', 'votes']
+    valid_filters = ['all', 'subscribed', 'local']
+    
+    if order not in valid_orders:
+        return Response({
+            "error": f"Paràmetre 'order' invàlid. Valors permesos: {', '.join(valid_orders)}"
+        }, status=400)
+    
+    if filter_type not in valid_filters:
+        return Response({
+            "error": f"Paràmetre 'filter' invàlid. Valors permesos: {', '.join(valid_filters)}"
+        }, status=400)
+    
+    # Filtres subscribed i local requereixen autenticació
+    if filter_type in ['subscribed', 'local'] and not request.user.is_authenticated:
+        return Response({
+            "error": "Cal autenticació per utilitzar els filtres 'subscribed' o 'local'"
+        }, status=401)
+    
+    # Començar amb tots els posts
     posts = Post.objects.prefetch_related('communities').all()
+    
+    # Aplicar filtre
+    if filter_type == 'subscribed' and request.user.is_authenticated:
+        # Posts de comunitats a les quals l'usuari està subscrit
+        user_communities = request.user.subscribed_communities.all()
+        posts = posts.filter(communities__in=user_communities).distinct()
+    
+    elif filter_type == 'local' and request.user.is_authenticated:
+        # Posts de comunitats a les quals l'usuari NO està subscrit
+        user_communities = request.user.subscribed_communities.all()
+        posts = posts.exclude(communities__in=user_communities).distinct()
+    
+    # Aplicar ordenació
+    if order == 'new':
+        posts = posts.order_by('-published_date')
+    elif order == 'old':
+        posts = posts.order_by('published_date')
+    elif order == 'comments':
+        posts = posts.annotate(comment_count=Count('comments')).order_by('-comment_count', '-published_date')
+    elif order == 'votes':
+        posts = posts.order_by('-votes', '-published_date')
+    
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
 
-@swagger_auto_schema(
-    method='get',
-    operation_description="Retorna un post concret amb totes les seves dades i comunitats",
+@extend_schema(
+    summary="Detall d'un post",
+    description="Retorna la informació detallada d'un post concret amb totes les seves dades i comunitats associades",
     responses={
         200: PostSerializer,
-        404: 'Not Found - post no trobat'
+        404: OpenApiResponse(description='Post no trobat')
     },
     tags=['Posts']
 )
@@ -72,10 +205,10 @@ class PostCreateAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    @swagger_auto_schema(
-        request_body=PostCreateSerializer,
-        responses={200: PostSerializer},
-        operation_description="""
+    @extend_schema(
+        request=PostCreateSerializer,
+        responses={201: PostSerializer},
+        description="""
         Crea un post nou amb els següents camps:
         - title: Títol del post (obligatori)
         - content: Contingut del post (obligatori)
@@ -107,10 +240,10 @@ class PostEditAPIView(generics.GenericAPIView):
     def get_object(self, pk):
         return get_object_or_404(Post, pk=pk)
 
-    @swagger_auto_schema(
-        request_body=PostUpdateSerializer,
+    @extend_schema(
+        request=PostUpdateSerializer,
         responses={200: PostSerializer},
-        operation_description="Actualitza els camps enviats del post (formData amb fitxers i text)",
+        description="Actualitza els camps enviats del post (formData amb fitxers i text)",
         tags=['Posts']
     )
     def put(self, request, pk):
@@ -126,13 +259,14 @@ class DeletePostAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
-            204: PostDeleteSerializer,
-            404: "Post no trobat",
-            401: "No autenticat"
+            204: OpenApiResponse(description="Post eliminat correctament"),
+            404: OpenApiResponse(description="Post no trobat"),
+            401: OpenApiResponse(description="No autenticat"),
+            403: OpenApiResponse(description="No tens permís per eliminar aquest post")
         },
-        operation_description="Elimina un post concret (només l'autor pot eliminar-lo)",
+        description="Elimina un post concret (només l'autor pot eliminar-lo)",
         tags=['Posts']
     )
 
@@ -150,9 +284,9 @@ class UpvotePostAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
-        responses={200: "Número de vots actual del post"},
-        operation_description="Dóna un vot positiu (upvote) al post",
+    @extend_schema(
+        responses={200: OpenApiResponse(description="Número de vots actual del post")},
+        description="Dóna un vot positiu (upvote) al post",
         tags=['Posts']
     )
     def post(self, request, pk):
@@ -175,9 +309,9 @@ class DownvotePostAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
-        responses={200: "Número de vots actual del post"},
-        operation_description="Dóna un vot negatiu (downvote) al post",
+    @extend_schema(
+        responses={200: OpenApiResponse(description="Número de vots actual del post")},
+        description="Dóna un vot negatiu (downvote) al post",
         tags=['Posts']
     )
     def post(self, request, pk):
@@ -197,65 +331,229 @@ class DownvotePostAPIView(APIView):
 
 # -------------------- COMMENT VIEWS --------------------
 
-@swagger_auto_schema(
-    method='get',
-    operation_description="Retorna tots els comentaris d'un post concret ordenats per data de publicació",
+@extend_schema(
+    summary="Comentaris d'un post",
+    description="""
+    Retorna tots els comentaris d'un post concret (llista plana sense jerarquia).
+    
+    **Paràmetres d'ordenació (order):**
+    - `new` (defecte): Ordena del més recent al més antic per data de publicació
+    - `old`: Ordena del més antic al més recent per data de publicació
+    - `top`: Ordena per nombre de vots (de més a menys). Els comentaris amb els mateixos vots s'ordenen per data (més recents primer)
+    
+    **Exemples d'ús:**
+    - `/api/posts/1/comments/` - Comentaris més recents (comportament per defecte)
+    - `/api/posts/1/comments/?order=top` - Comentaris ordenats per vots
+    - `/api/posts/1/comments/?order=old` - Comentaris més antics primer
+    """,
+    parameters=[
+        OpenApiParameter(
+            name='order',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Criteri d'ordenació dels comentaris",
+            enum=['new', 'old', 'top'],
+            default='new',
+            required=False
+        ),
+    ],
     responses={
         200: CommentSerializer(many=True),
-        404: 'Not Found - post no trobat'
+        400: OpenApiResponse(
+            description="Bad Request - Paràmetre invàlid",
+            examples=[
+                OpenApiExample(
+                    'Error paràmetre order invàlid',
+                    value={"error": "Paràmetre 'order' invàlid. Valors permesos: new, old, top"},
+                    response_only=True
+                )
+            ]
+        ),
+        404: OpenApiResponse(description='Post no trobat')
     },
     tags=['Comments']
 )
 @api_view(['GET'])
 def post_comments(request, pk):
     """
-    GET /api/posts/{id}/comments/
-    Retorna tots els comentaris (plana sense jerarquia) d'un post.
+    GET /api/posts/{id}/comments/?order=new
+    Retorna tots els comentaris (plana sense jerarquia) d'un post amb ordenació.
     """
     post = get_object_or_404(Post, pk=pk)
-    comments = Comment.objects.filter(post=post).order_by('published_date')
+    
+    # Obtenir paràmetre d'ordenació
+    order = request.GET.get('order', 'new').lower()
+    
+    # Validar paràmetre
+    valid_orders = ['new', 'old', 'top']
+    if order not in valid_orders:
+        return Response({
+            "error": f"Paràmetre 'order' invàlid. Valors permesos: {', '.join(valid_orders)}"
+        }, status=400)
+    
+    # Obtenir comentaris
+    comments = Comment.objects.filter(post=post)
+    
+    # Aplicar ordenació
+    if order == 'new':
+        comments = comments.order_by('-published_date')
+    elif order == 'old':
+        comments = comments.order_by('published_date')
+    elif order == 'top':
+        comments = comments.order_by('-votes', '-published_date')
+    
     serializer = CommentSerializer(comments, many=True)
     return Response(serializer.data)
 
 
-@swagger_auto_schema(
-    method='get',
-    operation_description="Retorna els comentaris d'un post amb estructura jeràrquica en arbre (fills dins de 'replies')",
+@extend_schema(
+    summary="Comentaris en arbre d'un post",
+    description="""
+    Retorna els comentaris d'un post amb estructura jeràrquica en arbre. Els comentaris fills apareixen dins del camp 'replies' de cada comentari pare.
+    
+    **Paràmetres d'ordenació (order):**
+    - `new` (defecte): Ordena del més recent al més antic per data de publicació
+    - `old`: Ordena del més antic al més recent per data de publicació
+    - `top`: Ordena per nombre de vots (de més a menys). Els comentaris amb els mateixos vots s'ordenen per data (més recents primer)
+    
+    **Notes:**
+    - L'ordenació s'aplica a tots els nivells de l'arbre de comentaris
+    - Els comentaris fills (replies) també segueixen el mateix criteri d'ordenació
+    
+    **Exemples d'ús:**
+    - `/api/posts/1/comments/tree/` - Comentaris més recents en arbre
+    - `/api/posts/1/comments/tree/?order=top` - Comentaris ordenats per vots en arbre
+    """,
+    parameters=[
+        OpenApiParameter(
+            name='order',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Criteri d'ordenació dels comentaris",
+            enum=['new', 'old', 'top'],
+            default='new',
+            required=False
+        ),
+    ],
     responses={
         200: CommentTreeSerializer(many=True),
-        404: 'Not Found - post no trobat'
+        400: OpenApiResponse(
+            description="Bad Request - Paràmetre invàlid",
+            examples=[
+                OpenApiExample(
+                    'Error paràmetre order invàlid',
+                    value={"error": "Paràmetre 'order' invàlid. Valors permesos: new, old, top"},
+                    response_only=True
+                )
+            ]
+        ),
+        404: OpenApiResponse(description='Post no trobat')
     },
     tags=['Comments']
 )
 @api_view(['GET'])
 def post_comments_tree(request, pk):
     """
-    GET /api/posts/{id}/comments/tree/
+    GET /api/posts/{id}/comments/tree/?order=new
     Retorna els comentaris en estructura d'arbre amb tots els nivells de respostes.
     """
     post = get_object_or_404(Post, pk=pk)
-    root_comments = Comment.objects.filter(post=post, parent__isnull=True).order_by('published_date')
-    serializer = CommentTreeSerializer(root_comments, many=True)
+    
+    # Obtenir paràmetre d'ordenació
+    order = request.GET.get('order', 'new').lower()
+    
+    # Validar paràmetre
+    valid_orders = ['new', 'old', 'top']
+    if order not in valid_orders:
+        return Response({
+            "error": f"Paràmetre 'order' invàlid. Valors permesos: {', '.join(valid_orders)}"
+        }, status=400)
+    
+    # Obtenir comentaris root
+    root_comments = Comment.objects.filter(post=post, parent__isnull=True)
+    
+    # Aplicar ordenació
+    if order == 'new':
+        root_comments = root_comments.order_by('-published_date')
+    elif order == 'old':
+        root_comments = root_comments.order_by('published_date')
+    elif order == 'top':
+        root_comments = root_comments.order_by('-votes', '-published_date')
+    
+    serializer = CommentTreeSerializer(root_comments, many=True, context={'order': order})
     return Response(serializer.data)
 
 
-@swagger_auto_schema(
-    method='get',
-    operation_description="Retorna només els comentaris de primer nivell d'un post (sense respostes)",
+@extend_schema(
+    summary="Comentaris de primer nivell d'un post",
+    description="""
+    Retorna només els comentaris de primer nivell (root) d'un post, sense incloure les respostes. El camp 'replies' estarà buit per a tots els comentaris.
+    
+    **Paràmetres d'ordenació (order):**
+    - `new` (defecte): Ordena del més recent al més antic per data de publicació
+    - `old`: Ordena del més antic al més recent per data de publicació
+    - `top`: Ordena per nombre de vots (de més a menys). Els comentaris amb els mateixos vots s'ordenen per data (més recents primer)
+    
+    **Exemples d'ús:**
+    - `/api/posts/1/comments/root/` - Comentaris de primer nivell més recents
+    - `/api/posts/1/comments/root/?order=top` - Comentaris de primer nivell ordenats per vots
+    """,
+    parameters=[
+        OpenApiParameter(
+            name='order',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Criteri d'ordenació dels comentaris",
+            enum=['new', 'old', 'top'],
+            default='new',
+            required=False
+        ),
+    ],
     responses={
         200: CommentTreeSerializer(many=True),
-        404: 'Not Found - post no trobat'
+        400: OpenApiResponse(
+            description="Bad Request - Paràmetre invàlid",
+            examples=[
+                OpenApiExample(
+                    'Error paràmetre order invàlid',
+                    value={"error": "Paràmetre 'order' invàlid. Valors permesos: new, old, top"},
+                    response_only=True
+                )
+            ]
+        ),
+        404: OpenApiResponse(description='Post no trobat')
     },
     tags=['Comments']
 )
 @api_view(['GET'])
 def post_comments_root(request, pk):
     """
-    GET /api/posts/{id}/comments/root/
+    GET /api/posts/{id}/comments/root/?order=new
     Retorna només els comentaris pare (primer nivell) sense incloure les respostes.
     """
     post = get_object_or_404(Post, pk=pk)
-    root_comments = Comment.objects.filter(post=post, parent__isnull=True).order_by('published_date')
+    
+    # Obtenir paràmetre d'ordenació
+    order = request.GET.get('order', 'new').lower()
+    
+    # Validar paràmetre
+    valid_orders = ['new', 'old', 'top']
+    if order not in valid_orders:
+        return Response({
+            "error": f"Paràmetre 'order' invàlid. Valors permesos: {', '.join(valid_orders)}"
+        }, status=400)
+    
+    # Obtenir comentaris root
+    root_comments = Comment.objects.filter(post=post, parent__isnull=True)
+    
+    # Aplicar ordenació
+    if order == 'new':
+        root_comments = root_comments.order_by('-published_date')
+    elif order == 'old':
+        root_comments = root_comments.order_by('published_date')
+    elif order == 'top':
+        root_comments = root_comments.order_by('-votes', '-published_date')
+    
     serializer = CommentTreeSerializer(root_comments, many=True)
     for c in serializer.data:
         c['replies'] = []
@@ -267,10 +565,10 @@ class CommentCreateAPIView(generics.GenericAPIView):
     parser_classes = [MultiPartParser, FormParser]
     serializer_class = CommentCreateSerializer
 
-    @swagger_auto_schema(
-        request_body=CommentCreateSerializer,
+    @extend_schema(
+        request=CommentCreateSerializer,
         responses={201: CommentSerializer},
-        operation_description="Crea un comentario en un post. Soporta parent_id e imagen.",
+        description="Crea un comentari en un post. Suporta parent_id per crear respostes a altres comentaris i permet pujar una imatge",
         tags=['Comments']
     )
     def post(self, request, post_id):
@@ -309,10 +607,13 @@ class CommentEditAPIView(generics.GenericAPIView):
        return get_object_or_404(Comment, pk=comment_id)
 
 
-   @swagger_auto_schema(
-       request_body=CommentEditSerializer,
-       responses={200: CommentSerializer},
-       operation_description="Edita un comentari existent. Permet modificar el contingut i/o la imatge.",
+   @extend_schema(
+       request=CommentEditSerializer,
+       responses={
+           200: CommentSerializer,
+           403: OpenApiResponse(description="No tens permís per editar aquest comentari")
+       },
+       description="Edita un comentari existent. Permet modificar el contingut i/o la imatge. Només l'autor pot editar el seu comentari",
        tags=["Comments"],
    )
    def put(self, request, comment_id):
@@ -338,14 +639,14 @@ class DeleteCommentAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
-            204: "Comentari eliminat correctament",
-            404: "Comentari no trobat",
-            401: "No autenticat",
-            403: "No tens permís per eliminar aquest comentari"
+            204: OpenApiResponse(description="Comentari eliminat correctament"),
+            404: OpenApiResponse(description="Comentari no trobat"),
+            401: OpenApiResponse(description="No autenticat"),
+            403: OpenApiResponse(description="No tens permís per eliminar aquest comentari")
         },
-        operation_description="Elimina un comentari concret (només l'autor pot eliminar-lo)",
+        description="Elimina un comentari concret. Només l'autor pot eliminar el seu propi comentari",
         tags=['Comments']
     )
     def delete(self, request, comment_id):
@@ -363,9 +664,9 @@ class UpvoteCommentAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
-        responses={200: "Número de vots actual del comentari"},
-        operation_description="Dóna un vot positiu (upvote) al comentari",
+    @extend_schema(
+        responses={200: OpenApiResponse(description="Número de vots actual del comentari")},
+        description="Dóna un vot positiu (upvote) al comentari",
         tags=['Comments']
     )
     def post(self, request, comment_id):
@@ -388,9 +689,9 @@ class DownvoteCommentAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
-        responses={200: "Número de vots actual del comentari"},
-        operation_description="Dóna un vot negatiu (downvote) al comentari",
+    @extend_schema(
+        responses={200: OpenApiResponse(description="Número de vots actual del comentari")},
+        description="Dóna un vot negatiu (downvote) al comentari",
         tags=['Comments']
     )
     def post(self, request, comment_id):
@@ -411,38 +712,62 @@ class DownvoteCommentAPIView(APIView):
 
 # -------------------- SEARCH --------------------
 
-query_param = openapi.Parameter(
-    'q', openapi.IN_QUERY,
-    description="Text a cercar en títols de posts o contingut de comentaris",
-    type=openapi.TYPE_STRING,
-    required=True
-)
-type_param = openapi.Parameter(
-    'type', openapi.IN_QUERY,
-    description="Tipus de cerca: 'posts' (només posts), 'comments' (només comentaris), o 'both' (ambdós)",
-    type=openapi.TYPE_STRING,
-    required=False,
-    default='both',
-    enum=['posts', 'comments', 'both']
-)
-
-@swagger_auto_schema(
-    method='get',
-    manual_parameters=[query_param, type_param],
-    operation_description="Cerca posts i/o comentaris pel text indicat. Retorna resultats ordenats per data de publicació (més recents primer)",
-    responses={
-        200: openapi.Response(
-            description="Posts i/o comentaris trobats",
-            examples={
-                'application/json': {
-                    "query": "exemple",
-                    "type": "both",
-                    "posts": [],
-                    "comments": []
-                }
-            }
+@extend_schema(
+    summary="Cerca posts i comentaris",
+    description="""
+    Cerca posts i/o comentaris pel text indicat. 
+    
+    **Cerca en posts:** Busca coincidències al títol del post
+    **Cerca en comentaris:** Busca coincidències al contingut del comentari
+    
+    Els resultats es retornen ordenats per data de publicació (més recents primer)
+    """,
+    parameters=[
+        OpenApiParameter(
+            name='q',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Text a cercar en títols de posts o contingut de comentaris",
+            required=True
         ),
-        400: 'Bad Request - cal especificar el paràmetre q'
+        OpenApiParameter(
+            name='type',
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            description="Tipus de cerca",
+            enum=['posts', 'comments', 'both'],
+            default='both',
+            required=False
+        )
+    ],
+    responses={
+        200: OpenApiResponse(
+            description="Posts i/o comentaris trobats",
+            examples=[
+                OpenApiExample(
+                    'Exemple de cerca',
+                    value={
+                        "query": "exemple",
+                        "type": "both",
+                        "posts": [],
+                        "comments": []
+                    }
+                )
+            ]
+        ),
+        400: OpenApiResponse(
+            description='Bad Request - cal especificar el paràmetre q',
+            examples=[
+                OpenApiExample(
+                    'Error paràmetre q buit',
+                    value={"error": "Cal especificar el paràmetre q"}
+                ),
+                OpenApiExample(
+                    'Error paràmetre type invàlid',
+                    value={"error": "El paràmetre type ha de ser 'posts', 'comments' o 'both'"}
+                )
+            ]
+        )
     },
     tags=['Search']
 )
