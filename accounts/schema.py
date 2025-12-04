@@ -1,5 +1,6 @@
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
 
+
 class APIKeyScheme(OpenApiAuthenticationExtension):
     target_class = 'accounts.authentication.APIKeyAuthentication'
     name = 'APIKeyAuth'

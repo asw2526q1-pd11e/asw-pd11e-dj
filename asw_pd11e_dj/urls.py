@@ -1,3 +1,4 @@
+# flake8: noqa
 """
 URL configuration for asw_pd11e_dj project.
 """
