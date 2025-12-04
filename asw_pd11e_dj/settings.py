@@ -58,7 +58,7 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SERVERS': [
-        {'url': 'https://asw-pd11e-dj.onrender.com/api/', 'description': 'Servidor de Producción (Render)'},
+        {'url': 'https://asw-pd11e-dj.onrender.com/', 'description': 'Servidor de Producción (Render)'},
         {'url': 'http://127.0.0.1:8000/api/', 'description': 'Servidor de Desarrollo Local'},
     ],
 }
