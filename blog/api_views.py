@@ -280,7 +280,12 @@ class PostEditAPIView(generics.GenericAPIView):
                 ]
             )
         },
-        description="Actualitza els camps enviats del post (només l'autor)",
+        description=(
+            "Actualitza els camps enviats del post (només l'autor).\n"
+            "\n"
+            "**Nota:** Només s'actualitzen els camps que s'envien amb valors no buits.\n"
+            "Els camps buits o no enviats es mantenen sense canvis."
+        ),
         tags=['Posts']
     )
     def put(self, request, pk):
@@ -289,12 +294,26 @@ class PostEditAPIView(generics.GenericAPIView):
         if post.author != request.user:
             return Response({"detail": "No tens permís per editar aquest post"}, status=403)
         
-        serializer = PostUpdateSerializer(post, data=request.data, partial=True)
+        # Filtrar camps buits de request.data
+        cleaned_data = {}
+        for key, value in request.data.items():
+            # Només afegir si el valor no és buit
+            if value not in ['', None, 'null']:
+                # Per a camps de text, verificar que no siguin només espais en blanc
+                if isinstance(value, str) and value.strip() == '':
+                    continue
+                cleaned_data[key] = value
+        
+        # Si no hi ha res a actualitzar, retornar el post sense canvis
+        if not cleaned_data:
+            output_serializer = PostSerializer(post)
+            return Response(output_serializer.data)
+        
+        serializer = PostUpdateSerializer(post, data=cleaned_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         output_serializer = PostSerializer(post)
         return Response(output_serializer.data)
-
 
 class DeletePostAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
