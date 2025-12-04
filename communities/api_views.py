@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework import serializers, status
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
+from django.db.models import Count
+from rest_framework import status
 from django.db import models
 from rest_framework.permissions import IsAuthenticated
 from accounts.authentication import APIKeyAuthentication
@@ -176,7 +178,53 @@ def community_posts_api(request, pk):
             {"error": f"Error intern del servidor: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    
+
+filter_param = openapi.Parameter(
+    'mode',
+    openapi.IN_QUERY,
+    description="Filtre de comunitats: 'tot', 'subscrit', 'local'",
+    type=openapi.TYPE_STRING,
+    required=False,
+    default='tot',
+    enum=['tot', 'subscrit', 'local']
+)
+
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[filter_param],
+    operation_id="communities_filtered",
+    operation_description="Retorna les comunitats filtrades per mode: Tot, Subscrit, Local.",
+    responses={200: "Llista de comunitats amb informació de subscriptors, posts i comentaris"},
+    tags=['communities']
+)
+@api_view(['GET'])
+def communities_list_filtered(request):
+
+    user = request.user
+    filter_mode = request.GET.get('mode', 'tot')  # 'tot', 'subscrit', 'local'
+
+    communities = Community.objects.annotate(
+        real_posts=Count('posts', distinct=True),
+        real_comments=Count('posts__comments', distinct=True)
+    )
+
+    if filter_mode == 'subscrit':
+        communities = [c for c in communities if user in c.subscribers.all()]
+    elif filter_mode == 'local':
+        communities = [c for c in communities if user not in c.subscribers.all()]
+
+    community_data = []
+    for c in communities:
+        community_data.append({
+            "id": c.id,
+            "name": c.name,
+            "subs": c.subscribers.count(),
+            "posts": c.real_posts,
+            "comments": c.real_comments,
+            "is_subscribed": user in c.subscribers.all()
+        })
+
+    return Response(community_data, status=status.HTTP_200_OK)    
 
 class CommunityCreateAPIView(generics.CreateAPIView):
     """
