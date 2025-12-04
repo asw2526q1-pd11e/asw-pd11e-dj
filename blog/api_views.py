@@ -362,7 +362,7 @@ class DeletePostAPIView(APIView):
         if post.author != request.user:
             return Response({"detail": "No tens permís per eliminar aquest post"}, status=403)
         post.delete()
-        return Response(status=204)
+        return Response({"detail": "Post eliminat correctament"}, status=204)
 
 
 class UpvotePostAPIView(APIView):
@@ -416,6 +416,12 @@ class UpvotePostAPIView(APIView):
                 post.votes += 1
             vote_obj.vote = 1
             vote_obj.save()
+            post.save()
+        else:
+            # quitar voto (toggle off)
+            vote_obj.vote = 0
+            vote_obj.save()
+            post.votes -= 1
             post.save()
         return Response({"votes": post.votes})
 
@@ -471,6 +477,12 @@ class DownvotePostAPIView(APIView):
                 post.votes -= 1
             vote_obj.vote = -1
             vote_obj.save()
+            post.save()
+        else:
+            # quitar voto (toggle off)
+            vote_obj.vote = 0
+            vote_obj.save()
+            post.votes += 1
             post.save()
         return Response({"votes": post.votes})
 
@@ -904,11 +916,11 @@ class DeleteCommentAPIView(APIView):
         comment = get_object_or_404(Comment, pk=comment_id)
         if comment.author != request.user:
             return Response(
-                {"detail": "No tens permís per eliminar aquest comentari"}, 
+                {"detail": "No tens permís per eliminar aquest comentari"},
                 status=403
             )
         comment.delete()
-        return Response(status=204)
+        return Response({"detail": "Comentari eliminat correctament"}, status=204)
 
 
 class UpvoteCommentAPIView(APIView):
@@ -968,6 +980,12 @@ class UpvoteCommentAPIView(APIView):
             vote_obj.vote = 1
             vote_obj.save()
             comment.save()
+        else:
+            # quitar voto (toggle off)
+            vote_obj.vote = 0
+            vote_obj.save()
+            comment.votes -= 1
+            comment.save()
         return Response({"votes": comment.votes})
 
 
@@ -1023,6 +1041,11 @@ class DownvoteCommentAPIView(APIView):
             vote_obj.vote = -1
             vote_obj.save()
             comment.save()
+        else:
+            # quitar voto (toggle off)
+            vote_obj.vote = 0
+            vote_obj.save()
+            comment.votes += 1
         return Response({"votes": comment.votes})
 
 
