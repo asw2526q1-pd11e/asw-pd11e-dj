@@ -30,18 +30,18 @@ from .serializers import (
 @extend_schema(
     summary="Llista de posts",
     description=(
-        "Retorna la llista de tots els posts amb les seves comunitats associades.\n"
-        "\n"
-        "**Paràmetres d'ordenació (order):**\n"
-        "- **new** (defecte): Ordena del més recent al més antic per data de publicació\n"
-        "- **old**: Ordena del més antic al més recent per data de publicació\n"
-        "- **comments**: Ordena per nombre de comentaris (de més a menys)\n"
-        "- **votes**: Ordena per nombre de vots (de més a menys)\n"
-        "\n"
-        "**Paràmetres de filtratge (filter):**\n"
-        "- **all** (defecte): Retorna tots els posts sense filtre\n"
-        "- **subscribed**: Només posts de comunitats subscrites (requereix autenticació)\n"
-        "- **local**: Només posts de comunitats NO subscrites (requereix autenticació)"
+            "Retorna la llista de tots els posts amb les seves comunitats associades.\n"
+            "\n"
+            "**Paràmetres d'ordenació (order):**\n"
+            "- **new** (defecte): Ordena del més recent al més antic per data de publicació\n"
+            "- **old**: Ordena del més antic al més recent per data de publicació\n"
+            "- **comments**: Ordena per nombre de comentaris (de més a menys)\n"
+            "- **votes**: Ordena per nombre de vots (de més a menys)\n"
+            "\n"
+            "**Paràmetres de filtratge (filter):**\n"
+            "- **all** (defecte): Retorna tots els posts sense filtre\n"
+            "- **subscribed**: Només posts de comunitats subscrites (requereix autenticació)\n"
+            "- **local**: Només posts de comunitats NO subscrites (requereix autenticació)"
     ),
     parameters=[
         OpenApiParameter(
@@ -100,35 +100,35 @@ from .serializers import (
 def post_list(request):
     order = request.GET.get('order', 'new').lower()
     filter_type = request.GET.get('filter', 'all').lower()
-    
+
     valid_orders = ['new', 'old', 'comments', 'votes']
     valid_filters = ['all', 'subscribed', 'local']
-    
+
     if order not in valid_orders:
         return Response({
             "detail": f"Paràmetre 'order' invàlid. Valors permesos: {', '.join(valid_orders)}"
         }, status=400)
-    
+
     if filter_type not in valid_filters:
         return Response({
             "detail": f"Paràmetre 'filter' invàlid. Valors permesos: {', '.join(valid_filters)}"
         }, status=400)
-    
+
     if filter_type in ['subscribed', 'local'] and not request.user.is_authenticated:
         return Response({
             "detail": "Cal autenticació per utilitzar els filtres 'subscribed' o 'local'"
         }, status=401)
-    
+
     posts = Post.objects.prefetch_related('communities').all()
-    
+
     if filter_type == 'subscribed' and request.user.is_authenticated:
         user_communities = request.user.subscribed_communities.all()
         posts = posts.filter(communities__in=user_communities).distinct()
-    
+
     elif filter_type == 'local' and request.user.is_authenticated:
         user_communities = request.user.subscribed_communities.all()
         posts = posts.exclude(communities__in=user_communities).distinct()
-    
+
     if order == 'new':
         posts = posts.order_by('-published_date')
     elif order == 'old':
@@ -137,7 +137,7 @@ def post_list(request):
         posts = posts.annotate(comment_count=Count('comments')).order_by('-comment_count', '-published_date')
     elif order == 'votes':
         posts = posts.order_by('-votes', '-published_date')
-    
+
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
 
@@ -208,12 +208,12 @@ class PostCreateAPIView(generics.GenericAPIView):
             )
         },
         description=(
-            "Crea un post nou:\n"
-            "- title: Títol (obligatori, màx 200 caràcters)\n"
-            "- content: Contingut (obligatori, màx 5000 caràcters)\n"
-            "- url: Enllaç (opcional)\n"
-            "- image: Imatge (opcional)\n"
-            "- communities: IDs comunitats (opcional)"
+                "Crea un post nou:\n"
+                "- title: Títol (obligatori, màx 200 caràcters)\n"
+                "- content: Contingut (obligatori, màx 5000 caràcters)\n"
+                "- url: Enllaç (opcional)\n"
+                "- image: Imatge (opcional)\n"
+                "- communities: IDs comunitats (opcional)"
         ),
         tags=['Posts']
     )
@@ -223,7 +223,6 @@ class PostCreateAPIView(generics.GenericAPIView):
         post = serializer.save(author=request.user)
         output_serializer = PostSerializer(post)
         return Response(output_serializer.data, status=201)
-
 
 class PostEditAPIView(generics.GenericAPIView):
     authentication_classes = [APIKeyAuthentication]
@@ -281,39 +280,42 @@ class PostEditAPIView(generics.GenericAPIView):
             )
         },
         description=(
-            "Actualitza els camps enviats del post (només l'autor).\n"
-            "\n"
-            "**Nota:** Només s'actualitzen els camps que s'envien amb valors no buits.\n"
-            "Els camps buits o no enviats es mantenen sense canvis."
+                "Actualitza els camps enviats del post (només l'autor).\n"
+                "\n"
+                "**Nota:** Només s'actualitzen els camps que s'envien amb valors no buits.\n"
+                "Els camps buits o no enviats es mantenen sense canvis."
         ),
         tags=['Posts']
     )
     def put(self, request, pk):
+        return self._update(request, pk)
+
+    def patch(self, request, pk):
+        return self._update(request, pk)
+
+    def _update(self, request, pk):
         post = self.get_object(pk)
-        
+
         if post.author != request.user:
             return Response({"detail": "No tens permís per editar aquest post"}, status=403)
-        
-        # Filtrar camps buits de request.data
-        cleaned_data = {}
-        for key, value in request.data.items():
-            # Només afegir si el valor no és buit
-            if value not in ['', None, 'null']:
-                # Per a camps de text, verificar que no siguin només espais en blanc
-                if isinstance(value, str) and value.strip() == '':
-                    continue
-                cleaned_data[key] = value
-        
+
+        serializer = PostUpdateSerializer(post, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        output_serializer = PostSerializer(post)
+        return Response(output_serializer.data)
+
         # Si no hi ha res a actualitzar, retornar el post sense canvis
         if not cleaned_data:
             output_serializer = PostSerializer(post)
             return Response(output_serializer.data)
-        
+
         serializer = PostUpdateSerializer(post, data=cleaned_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         output_serializer = PostSerializer(post)
         return Response(output_serializer.data)
+
 
 class DeletePostAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
@@ -491,12 +493,12 @@ class DownvotePostAPIView(APIView):
 @extend_schema(
     summary="Comentaris d'un post",
     description=(
-        "Retorna tots els comentaris (llista plana).\n"
-        "\n"
-        "**Ordenació (order):**\n"
-        "- **new** (defecte): Més recents primer\n"
-        "- **old**: Més antics primer\n"
-        "- **top**: Més votats primer"
+            "Retorna tots els comentaris (llista plana).\n"
+            "\n"
+            "**Ordenació (order):**\n"
+            "- **new** (defecte): Més recents primer\n"
+            "- **old**: Més antics primer\n"
+            "- **top**: Més votats primer"
     ),
     parameters=[
         OpenApiParameter(
@@ -538,22 +540,22 @@ class DownvotePostAPIView(APIView):
 def post_comments(request, pk):
     post = get_object_or_404(Post, pk=pk)
     order = request.GET.get('order', 'new').lower()
-    
+
     valid_orders = ['new', 'old', 'top']
     if order not in valid_orders:
         return Response({
             "detail": f"Paràmetre 'order' invàlid. Valors permesos: {', '.join(valid_orders)}"
         }, status=400)
-    
+
     comments = Comment.objects.filter(post=post)
-    
+
     if order == 'new':
         comments = comments.order_by('-published_date')
     elif order == 'old':
         comments = comments.order_by('published_date')
     elif order == 'top':
         comments = comments.order_by('-votes', '-published_date')
-    
+
     serializer = CommentSerializer(comments, many=True)
     return Response(serializer.data)
 
@@ -561,12 +563,12 @@ def post_comments(request, pk):
 @extend_schema(
     summary="Comentaris en arbre",
     description=(
-        "Retorna comentaris amb estructura jeràrquica.\n"
-        "\n"
-        "**Ordenació (order):**\n"
-        "- **new** (defecte): Més recents primer\n"
-        "- **old**: Més antics primer\n"
-        "- **top**: Més votats primer"
+            "Retorna comentaris amb estructura jeràrquica.\n"
+            "\n"
+            "**Ordenació (order):**\n"
+            "- **new** (defecte): Més recents primer\n"
+            "- **old**: Més antics primer\n"
+            "- **top**: Més votats primer"
     ),
     parameters=[
         OpenApiParameter(
@@ -608,22 +610,22 @@ def post_comments(request, pk):
 def post_comments_tree(request, pk):
     post = get_object_or_404(Post, pk=pk)
     order = request.GET.get('order', 'new').lower()
-    
+
     valid_orders = ['new', 'old', 'top']
     if order not in valid_orders:
         return Response({
             "detail": f"Paràmetre 'order' invàlid. Valors permesos: {', '.join(valid_orders)}"
         }, status=400)
-    
+
     root_comments = Comment.objects.filter(post=post, parent__isnull=True)
-    
+
     if order == 'new':
         root_comments = root_comments.order_by('-published_date')
     elif order == 'old':
         root_comments = root_comments.order_by('published_date')
     elif order == 'top':
         root_comments = root_comments.order_by('-votes', '-published_date')
-    
+
     serializer = CommentTreeSerializer(root_comments, many=True, context={'order': order})
     return Response(serializer.data)
 
@@ -631,12 +633,12 @@ def post_comments_tree(request, pk):
 @extend_schema(
     summary="Comentaris de primer nivell",
     description=(
-        "Retorna només comentaris root (sense replies).\n"
-        "\n"
-        "**Ordenació (order):**\n"
-        "- **new** (defecte): Més recents primer\n"
-        "- **old**: Més antics primer\n"
-        "- **top**: Més votats primer"
+            "Retorna només comentaris root (sense replies).\n"
+            "\n"
+            "**Ordenació (order):**\n"
+            "- **new** (defecte): Més recents primer\n"
+            "- **old**: Més antics primer\n"
+            "- **top**: Més votats primer"
     ),
     parameters=[
         OpenApiParameter(
@@ -678,22 +680,22 @@ def post_comments_tree(request, pk):
 def post_comments_root(request, pk):
     post = get_object_or_404(Post, pk=pk)
     order = request.GET.get('order', 'new').lower()
-    
+
     valid_orders = ['new', 'old', 'top']
     if order not in valid_orders:
         return Response({
             "detail": f"Paràmetre 'order' invàlid. Valors permesos: {', '.join(valid_orders)}"
         }, status=400)
-    
+
     root_comments = Comment.objects.filter(post=post, parent__isnull=True)
-    
+
     if order == 'new':
         root_comments = root_comments.order_by('-published_date')
     elif order == 'old':
         root_comments = root_comments.order_by('published_date')
     elif order == 'top':
         root_comments = root_comments.order_by('-votes', '-published_date')
-    
+
     serializer = CommentTreeSerializer(root_comments, many=True)
     for c in serializer.data:
         c['replies'] = []
@@ -1054,9 +1056,9 @@ class DownvoteCommentAPIView(APIView):
 @extend_schema(
     summary="Cerca posts i comentaris",
     description=(
-        "Cerca posts per títol i comentaris per contingut.\n"
-        "\n"
-        "Resultats ordenats per data (més recents primer)"
+            "Cerca posts per títol i comentaris per contingut.\n"
+            "\n"
+            "Resultats ordenats per data (més recents primer)"
     ),
     parameters=[
         OpenApiParameter(
@@ -1120,7 +1122,7 @@ def search_posts_comments(request):
 
     if search_type not in ['posts', 'comments', 'both']:
         return Response(
-            {"detail": "El paràmetre type ha de ser 'posts', 'comments' o 'both'"}, 
+            {"detail": "El paràmetre type ha de ser 'posts', 'comments' o 'both'"},
             status=400
         )
 
