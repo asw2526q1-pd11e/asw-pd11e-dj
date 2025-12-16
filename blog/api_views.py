@@ -13,6 +13,8 @@ from rest_framework.permissions import IsAuthenticated
 from accounts.authentication import APIKeyAuthentication
 from rest_framework import generics
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.http import HttpResponse
+
 
 from .serializers import (
     PostSerializer,
@@ -317,6 +319,7 @@ class PostEditAPIView(generics.GenericAPIView):
         return Response(output_serializer.data)
 
 
+
 class DeletePostAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [IsAuthenticated]
@@ -364,8 +367,9 @@ class DeletePostAPIView(APIView):
         if post.author != request.user:
             return Response({"detail": "No tens permís per eliminar aquest post"}, status=403)
         post.delete()
-        return Response({"detail": "Post eliminat correctament"}, status=204)
-
+        # Usar HttpResponse sin contenido para código 204
+        return HttpResponse(status=204)
+    
 
 class UpvotePostAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
