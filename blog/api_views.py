@@ -1048,6 +1048,7 @@ class DownvoteCommentAPIView(APIView):
             vote_obj.vote = 0
             vote_obj.save()
             comment.votes += 1
+            comment.save()
         return Response({"votes": comment.votes})
 
 
