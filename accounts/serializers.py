@@ -8,7 +8,8 @@ class ErrorSerializer(serializers.Serializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
-    user_id = serializers.IntegerField(source="user.id", read_only=True)  # AÑADIDO
+    user_id = serializers.IntegerField(source="user.id",
+                                       read_only=True)
 
     nombre = serializers.CharField(required=False,
                                    allow_blank=True, default="")
@@ -18,7 +19,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ["user_id", "username", "nombre", "bio", "avatar", "banner", "api_key"]  # user_id añadido
+        fields = ["user_id", "username", "nombre",
+                  "bio", "avatar", "banner", "api_key"]
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

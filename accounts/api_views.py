@@ -498,6 +498,7 @@ class ToggleSavedCommentAPIView(APIView):
 
         return Response({"saved": saved}, status=status.HTTP_200_OK)
 
+
 class UserProfileAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
     permission_classes = [CustomIsAuthenticated]
@@ -505,7 +506,8 @@ class UserProfileAPIView(APIView):
     @extend_schema(
         summary="Obtenir perfil d'un usuari",
         description=(
-                "Retorna la informació pública del perfil d'un usuari específic.\n"
+                "Retorna la informació pública "
+                "del perfil d'un usuari específic.\n"
                 "\n"
                 "**Informació retornada:**\n"
                 "- Nom d'usuari\n"
@@ -533,7 +535,8 @@ class UserProfileAPIView(APIView):
                 description="No autoritzat",
                 examples=[OpenApiExample(
                     "NotAuthorized",
-                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    value={"error": "No tens permís "
+                                    "per accedir a aquest recurs"},
                     response_only=True
                 )]
             )
@@ -541,7 +544,8 @@ class UserProfileAPIView(APIView):
     )
     def get(self, request, user_id):
         try:
-            profile = Profile.objects.select_related('user').get(user__id=user_id)
+            profile = (
+                Profile.objects.select_related('user').get(user__id=user_id))
         except Profile.DoesNotExist:
             return Response(
                 {"error": "Usuari no trobat"},
@@ -554,6 +558,7 @@ class UserProfileAPIView(APIView):
         data.pop('api_key', None)
 
         return Response(data, status=status.HTTP_200_OK)
+
 
 class UserPostsAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
@@ -590,7 +595,8 @@ class UserPostsAPIView(APIView):
                 description="No autoritzat",
                 examples=[OpenApiExample(
                     "NotAuthorized",
-                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    value={"error": "No tens permís "
+                                    "per accedir a aquest recurs"},
                     response_only=True
                 )]
             )
@@ -625,7 +631,8 @@ class UserCommentsAPIView(APIView):
     @extend_schema(
         summary="Obtenir comentaris d'un usuari específic",
         description=(
-                "Retorna tots els comentaris escrits per un usuari específic.\n"
+                "Retorna tots els comentaris "
+                "escrits per un usuari específic.\n"
                 "\n"
                 "**Informació inclosa per cada comentari:**\n"
                 "- Contingut del comentari\n"
@@ -651,7 +658,8 @@ class UserCommentsAPIView(APIView):
                 description="No autoritzat",
                 examples=[OpenApiExample(
                     "NotAuthorized",
-                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    value={"error": "No tens permís "
+                                    "per accedir a aquest recurs"},
                     response_only=True
                 )]
             )
@@ -675,6 +683,7 @@ class UserCommentsAPIView(APIView):
 
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class UserSavedPostsAPIView(APIView):
     authentication_classes = [APIKeyAuthentication]
@@ -711,7 +720,8 @@ class UserSavedPostsAPIView(APIView):
                 description="No autoritzat",
                 examples=[OpenApiExample(
                     "NotAuthorized",
-                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    value={"error": "No tens permís "
+                                    "per accedir a aquest recurs"},
                     response_only=True
                 )]
             )
@@ -719,7 +729,8 @@ class UserSavedPostsAPIView(APIView):
     )
     def get(self, request, user_id):
         try:
-            profile = Profile.objects.select_related('user').get(user__id=user_id)
+            profile = (
+                Profile.objects.select_related('user').get(user__id=user_id))
         except Profile.DoesNotExist:
             return Response(
                 {"error": "Usuari no trobat"},
@@ -744,7 +755,8 @@ class UserSavedCommentsAPIView(APIView):
     @extend_schema(
         summary="Obtenir comentaris guardats d'un usuari específic",
         description=(
-                "Retorna tots els comentaris guardats per un usuari específic.\n"
+                "Retorna tots els comentaris "
+                "guardats per un usuari específic.\n"
                 "\n"
                 "**Informació inclosa per cada comentari:**\n"
                 "- Contingut del comentari\n"
@@ -770,7 +782,8 @@ class UserSavedCommentsAPIView(APIView):
                 description="No autoritzat",
                 examples=[OpenApiExample(
                     "NotAuthorized",
-                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    value={"error": "No tens permís per "
+                                    "accedir a aquest recurs"},
                     response_only=True
                 )]
             )
@@ -778,7 +791,8 @@ class UserSavedCommentsAPIView(APIView):
     )
     def get(self, request, user_id):
         try:
-            profile = Profile.objects.select_related('user').get(user__id=user_id)
+            profile = (
+                Profile.objects.select_related('user').get(user__id=user_id))
         except Profile.DoesNotExist:
             return Response(
                 {"error": "Usuari no trobat"},
