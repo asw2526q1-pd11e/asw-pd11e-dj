@@ -12,6 +12,9 @@ class PostSerializer(serializers.ModelSerializer):
                                               "complet del post")
     author = serializers.CharField(source="author.username",
                                    help_text="Nom d'usuari de l'autor")
+    author_id = serializers.IntegerField(source="author.id",
+                                         read_only=True,
+                                         help_text="ID de l'autor")
     published_date = serializers.DateTimeField(help_text="Data de publicació")
     votes = serializers.IntegerField(help_text="Número de vots del post")
     url = serializers.CharField(help_text="URL absoluta del post")
@@ -28,7 +31,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'author',
+        fields = ['id', 'title', 'content', 'author', 'author_id',
                   'published_date', 'votes', 'url',
                   'image', 'communities']
         ref_name = "PostSerializerWithCommunities"
@@ -180,6 +183,8 @@ class PostUpdateSerializer(serializers.ModelSerializer):
 class SavedPostSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source='author.username',
                                         read_only=True)
+    author_id = serializers.IntegerField(source='author.id',
+                                         read_only=True)
     author_bio = serializers.CharField(source='author.profile.bio',
                                        default='Este usuario no '
                                                'ha comentado nada.',
@@ -189,8 +194,9 @@ class SavedPostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'content', 'author_name', 'author_bio',
-                  'published_date', 'votes', 'image_url', 'url', 'communities']
+        fields = ['id', 'title', 'content', 'author_name', 'author_id',
+                  'author_bio', 'published_date', 'votes', 'image_url',
+                  'url', 'communities']
 
     def get_image_url(self, obj):
         if obj.image:
