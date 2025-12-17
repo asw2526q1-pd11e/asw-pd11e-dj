@@ -111,12 +111,15 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source="author.username",
                                    help_text="Nom d'usuari de "
                                              "l'autor del comentari")
+    author_id = serializers.IntegerField(source="author.id",
+                                         read_only=True,
+                                         help_text="ID de l'autor")
     image = serializers.ImageField(help_text="URL de la imatge del comentari, "
                                              "si existeix", allow_null=True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'post', 'parent', 'content', 'author',
+        fields = ['id', 'post', 'parent', 'content', 'author', 'author_id',
                   'published_date', 'votes', 'url', 'image']
 
 
@@ -124,6 +127,9 @@ class CommentTreeSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source="author.username",
                                    help_text="Nom d'usuari de "
                                              "l'autor del comentari")
+    author_id = serializers.IntegerField(source="author.id",
+                                         read_only=True,
+                                         help_text="ID de l'autor")
     image = serializers.ImageField(allow_null=True,
                                    help_text="URL de la imatge "
                                              "del comentari, si existeix")
@@ -133,7 +139,7 @@ class CommentTreeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'content', 'author',
+        fields = ['id', 'content', 'author', 'author_id',
                   'published_date', 'votes',
                   'image', 'replies']
 
@@ -144,7 +150,8 @@ class CommentTreeSerializer(serializers.ModelSerializer):
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(required=False, allow_blank=True, default="")
+    title = serializers.CharField(required=False,
+                                  allow_blank=True, default="")
     content = serializers.CharField(required=False,
                                     allow_blank=True, default="")
     url = serializers.URLField(required=False, allow_blank=True, default="")
