@@ -924,9 +924,10 @@ class DeleteCommentAPIView(APIView):
             return Response(
                 {"detail": "No tens permís per eliminar aquest comentari"},
                 status=403
-            )
+        )
         comment.delete()
-        return Response({"detail": "Comentari eliminat correctament"}, status=204)
+        # Usar HttpResponse sin contenido para código 204
+        return HttpResponse(status=204)
 
 
 class UpvoteCommentAPIView(APIView):
