@@ -8,6 +8,7 @@ from drf_spectacular.utils import (extend_schema,
                                    OpenApiResponse, OpenApiExample)
 
 from accounts.models import Profile
+from django.contrib.auth.models import User
 from accounts.authentication import APIKeyAuthentication
 from .serializers import ProfileSerializer
 from blog.models import Post, Comment
@@ -496,3 +497,300 @@ class ToggleSavedCommentAPIView(APIView):
             saved = True
 
         return Response({"saved": saved}, status=status.HTTP_200_OK)
+
+class UserProfileAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [CustomIsAuthenticated]
+
+    @extend_schema(
+        summary="Obtenir perfil d'un usuari",
+        description=(
+                "Retorna la informació pública del perfil d'un usuari específic.\n"
+                "\n"
+                "**Informació retornada:**\n"
+                "- Nom d'usuari\n"
+                "- Nom\n"
+                "- Biografia\n"
+                "- Foto de perfil\n"
+                "- Banner de perfil\n"
+                "\n"
+                "**Nota:** L'API Key no es retorna per seguretat\n"
+                "\n"
+                "**Requisits:**\n"
+                "- API Key vàlida i activa"
+        ),
+        responses={
+            200: ProfileSerializer,
+            404: OpenApiResponse(
+                description="Usuari no trobat",
+                examples=[OpenApiExample(
+                    "UserNotFound",
+                    value={"error": "Usuari no trobat"},
+                    response_only=True
+                )]
+            ),
+            403: OpenApiResponse(
+                description="No autoritzat",
+                examples=[OpenApiExample(
+                    "NotAuthorized",
+                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    response_only=True
+                )]
+            )
+        }
+    )
+    def get(self, request, user_id):
+        try:
+            profile = Profile.objects.select_related('user').get(user__id=user_id)
+        except Profile.DoesNotExist:
+            return Response(
+                {"error": "Usuari no trobat"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = ProfileSerializer(profile)
+        data = serializer.data
+
+        data.pop('api_key', None)
+
+        return Response(data, status=status.HTTP_200_OK)
+
+class UserPostsAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [CustomIsAuthenticated]
+
+    @extend_schema(
+        summary="Obtenir posts d'un usuari específic",
+        description=(
+                "Retorna tots els posts publicats per un usuari específic.\n"
+                "\n"
+                "**Informació inclosa per cada post:**\n"
+                "- Títol i contingut complet\n"
+                "- Imatges\n"
+                "- Data de creació\n"
+                "- Nombre de m'agrada\n"
+                "- Autor\n"
+                "- Comunitat a la que pertany\n"
+                "- Url continguda\n"
+                "\n"
+                "**Requisits:**\n"
+                "- API Key vàlida"
+        ),
+        responses={
+            200: PostSerializer(many=True),
+            404: OpenApiResponse(
+                description="No hi ha posts",
+                examples=[OpenApiExample(
+                    "NoPosts",
+                    value={"error": "Aquest usuari no ha publicat res"},
+                    response_only=True
+                )]
+            ),
+            403: OpenApiResponse(
+                description="No autoritzat",
+                examples=[OpenApiExample(
+                    "NotAuthorized",
+                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    response_only=True
+                )]
+            )
+        }
+    )
+    def get(self, request, user_id):
+        from django.contrib.auth.models import User
+
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Usuari no trobat"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        posts = Post.objects.filter(author=user)
+        if not posts.exists():
+            return Response(
+                {"error": "Aquest usuari no ha publicat res"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserCommentsAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [CustomIsAuthenticated]
+
+    @extend_schema(
+        summary="Obtenir comentaris d'un usuari específic",
+        description=(
+                "Retorna tots els comentaris escrits per un usuari específic.\n"
+                "\n"
+                "**Informació inclosa per cada comentari:**\n"
+                "- Contingut del comentari\n"
+                "- Data de publicació\n"
+                "- Referència al post original\n"
+                "- Nombre de m'agrada rebuts\n"
+                "- Url i imatge\n"
+                "\n"
+                "**Requisits:**\n"
+                "- API Key vàlida"
+        ),
+        responses={
+            200: CommentSerializer(many=True),
+            404: OpenApiResponse(
+                description="No hi ha comentaris",
+                examples=[OpenApiExample(
+                    "NoComments",
+                    value={"error": "Aquest usuari no ha comentat res"},
+                    response_only=True
+                )]
+            ),
+            403: OpenApiResponse(
+                description="No autoritzat",
+                examples=[OpenApiExample(
+                    "NotAuthorized",
+                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    response_only=True
+                )]
+            )
+        }
+    )
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Usuari no trobat"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        comments = Comment.objects.filter(author=user)
+        if not comments.exists():
+            return Response(
+                {"error": "Aquest usuari no ha comentat res"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserSavedPostsAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [CustomIsAuthenticated]
+
+    @extend_schema(
+        summary="Obtenir posts guardats d'un usuari específic",
+        description=(
+                "Retorna tots els posts guardats per un usuari específic.\n"
+                "\n"
+                "**Informació inclosa per cada post:**\n"
+                "- Títol i contingut complet\n"
+                "- Imatges\n"
+                "- Data de creació\n"
+                "- Nombre de m'agrada\n"
+                "- Autor\n"
+                "- Comunitat a la que pertany\n"
+                "- Url continguda\n"
+                "\n"
+                "**Requisits:**\n"
+                "- API Key vàlida"
+        ),
+        responses={
+            200: SavedPostSerializer(many=True),
+            404: OpenApiResponse(
+                description="No hi ha posts guardats",
+                examples=[OpenApiExample(
+                    "NoSavedPosts",
+                    value={"error": "Aquest usuari no té posts guardats"},
+                    response_only=True
+                )]
+            ),
+            403: OpenApiResponse(
+                description="No autoritzat",
+                examples=[OpenApiExample(
+                    "NotAuthorized",
+                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    response_only=True
+                )]
+            )
+        }
+    )
+    def get(self, request, user_id):
+        try:
+            profile = Profile.objects.select_related('user').get(user__id=user_id)
+        except Profile.DoesNotExist:
+            return Response(
+                {"error": "Usuari no trobat"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        saved_posts = profile.saved_posts.all()
+        if not saved_posts.exists():
+            return Response(
+                {"error": "Aquest usuari no té posts guardats"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = SavedPostSerializer(saved_posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserSavedCommentsAPIView(APIView):
+    authentication_classes = [APIKeyAuthentication]
+    permission_classes = [CustomIsAuthenticated]
+
+    @extend_schema(
+        summary="Obtenir comentaris guardats d'un usuari específic",
+        description=(
+                "Retorna tots els comentaris guardats per un usuari específic.\n"
+                "\n"
+                "**Informació inclosa per cada comentari:**\n"
+                "- Contingut del comentari\n"
+                "- Data de publicació\n"
+                "- Referència al post original\n"
+                "- Nombre de m'agrada rebuts\n"
+                "- Url i imatge\n"
+                "\n"
+                "**Requisits:**\n"
+                "- API Key vàlida"
+        ),
+        responses={
+            200: CommentSerializer(many=True),
+            404: OpenApiResponse(
+                description="No hi ha comentaris guardats",
+                examples=[OpenApiExample(
+                    "NoSavedComments",
+                    value={"error": "Aquest usuari no té comentaris guardats"},
+                    response_only=True
+                )]
+            ),
+            403: OpenApiResponse(
+                description="No autoritzat",
+                examples=[OpenApiExample(
+                    "NotAuthorized",
+                    value={"error": "No tens permís per accedir a aquest recurs"},
+                    response_only=True
+                )]
+            )
+        }
+    )
+    def get(self, request, user_id):
+        try:
+            profile = Profile.objects.select_related('user').get(user__id=user_id)
+        except Profile.DoesNotExist:
+            return Response(
+                {"error": "Usuari no trobat"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        saved_comments = profile.saved_comments.all()
+        if not saved_comments.exists():
+            return Response(
+                {"error": "Aquest usuari no té comentaris guardats"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = CommentSerializer(saved_comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
